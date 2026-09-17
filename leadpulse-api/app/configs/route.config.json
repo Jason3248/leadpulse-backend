@@ -1,0 +1,792 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "controller": "auth",
+    "action": "register",
+    "middlewares": [
+      "authRateLimit"
+    ],
+    "validate": "register"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "controller": "auth",
+    "action": "login",
+    "middlewares": [
+      "authRateLimit"
+    ],
+    "validate": "login"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/refresh",
+    "controller": "auth",
+    "action": "refresh",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "controller": "auth",
+    "action": "logout",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/forgot-password",
+    "controller": "auth",
+    "action": "forgotPassword",
+    "middlewares": [
+      "authRateLimit"
+    ],
+    "validate": "forgotPassword"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/reset-password",
+    "controller": "auth",
+    "action": "resetPassword",
+    "middlewares": [
+      "authRateLimit"
+    ],
+    "validate": "resetPassword"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/me",
+    "controller": "auth",
+    "action": "me",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/auth/change-password",
+    "controller": "auth",
+    "action": "changePassword",
+    "middlewares": [
+      "authenticate"
+    ],
+    "validate": "changePassword"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/auth/profile",
+    "controller": "auth",
+    "action": "updateProfile",
+    "middlewares": [
+      "authenticate"
+    ],
+    "validate": "updateProfile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/clients",
+    "controller": "client",
+    "action": "create",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/clients",
+    "controller": "client",
+    "action": "list",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/clients/:id",
+    "controller": "client",
+    "action": "getById",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/clients/:id",
+    "controller": "client",
+    "action": "update",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "update"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/clients/:id/deactivate",
+    "controller": "client",
+    "action": "deactivate",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/clients/:id/reactivate",
+    "controller": "client",
+    "action": "reactivate",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/lead-lists",
+    "controller": "leadList",
+    "action": "create",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/lead-lists",
+    "controller": "leadList",
+    "action": "listForClient",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/lead-lists/:id",
+    "controller": "leadList",
+    "action": "getById",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/lead-lists/:id/archive",
+    "controller": "leadList",
+    "action": "archive",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/leads/import",
+    "controller": "lead",
+    "action": "import",
+    "middlewares": [
+      "authenticate",
+      "requireManager",
+      "uploadCsv"
+    ],
+    "validate": "importLeads"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/leads/imports",
+    "controller": "lead",
+    "action": "importHistory",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/leads/imports/:jobId/status",
+    "controller": "lead",
+    "action": "importStatus",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/leads/imports/:jobId/errors",
+    "controller": "lead",
+    "action": "importErrorFile",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/leads",
+    "controller": "lead",
+    "action": "list",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/leads/:id",
+    "controller": "lead",
+    "action": "getById",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/leads/:id/dnc",
+    "controller": "lead",
+    "action": "updateDnc",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "updateDnc"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/leads/:id/status",
+    "controller": "lead",
+    "action": "updateStatus",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "updateStatus"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/campaigns",
+    "controller": "campaign",
+    "action": "create",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/campaigns",
+    "controller": "campaign",
+    "action": "list",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/campaigns/:id",
+    "controller": "campaign",
+    "action": "getById",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/campaigns/:id",
+    "controller": "campaign",
+    "action": "update",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "update"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/campaigns/:id/executives",
+    "controller": "campaign",
+    "action": "assignExecutives",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "assignExecutives"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/campaigns/:id/executives/:executiveId",
+    "controller": "campaign",
+    "action": "unassignExecutive",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/campaigns/:id/reassign-leads",
+    "controller": "campaign",
+    "action": "reassignLeads",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "reassignLeads"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/campaigns/:id/approve",
+    "controller": "campaign",
+    "action": "approve",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/campaigns/:id/pause",
+    "controller": "campaign",
+    "action": "pause",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/campaigns/:id/resume",
+    "controller": "campaign",
+    "action": "resume",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/campaigns/:id/end",
+    "controller": "campaign",
+    "action": "end",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/my-campaigns",
+    "controller": "call",
+    "action": "myCampaigns",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/campaigns/:campaignId/next",
+    "controller": "call",
+    "action": "nextLead",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/call/leads/:campaignLeadId/remarks",
+    "controller": "call",
+    "action": "logRemark",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ],
+    "validate": "logRemark"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/call/leads/:campaignLeadId/skip",
+    "controller": "call",
+    "action": "skip",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/leads/:campaignLeadId",
+    "controller": "call",
+    "action": "leadDetail",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/campaigns/:campaignId/callbacks-due",
+    "controller": "call",
+    "action": "callbacksDue",
+    "middlewares": [
+      "authenticate",
+      "requireManagerOrExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/campaigns/:campaignId/pending-conversions",
+    "controller": "call",
+    "action": "pendingConversions",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/call/remarks/:remarkId/review",
+    "controller": "call",
+    "action": "reviewConversion",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "reviewConversion"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/campaigns/:campaignId/progress",
+    "controller": "call",
+    "action": "progress",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/email/campaigns/:campaignId/dispatch",
+    "controller": "email",
+    "action": "startDispatch",
+    "middlewares": [
+      "authenticate",
+      "requireManagerOrExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/email/dispatches/:jobId",
+    "controller": "email",
+    "action": "dispatchStatus",
+    "middlewares": [
+      "authenticate",
+      "requireManagerOrExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/email/campaigns/:campaignId/dispatches",
+    "controller": "email",
+    "action": "dispatchHistory",
+    "middlewares": [
+      "authenticate",
+      "requireManagerOrExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/email/campaigns/:campaignId/analytics",
+    "controller": "email",
+    "action": "analytics",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/track/open",
+    "controller": "email",
+    "action": "trackOpen",
+    "middlewares": []
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/track/click",
+    "controller": "email",
+    "action": "trackClick",
+    "middlewares": []
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/track/convert",
+    "controller": "email",
+    "action": "showConversionPage",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/track/convert",
+    "controller": "email",
+    "action": "trackConversion",
+    "middlewares": []
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/track/unsubscribe",
+    "controller": "email",
+    "action": "showUnsubscribePage",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/track/unsubscribe",
+    "controller": "email",
+    "action": "trackUnsubscribe",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/webhooks/sendgrid",
+    "controller": "email",
+    "action": "webhook",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/executives",
+    "controller": "user",
+    "action": "createExecutive",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "createExecutive"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users/executives",
+    "controller": "user",
+    "action": "listExecutives",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/client-users",
+    "controller": "user",
+    "action": "createClientUser",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "createClientUser"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users/client-users",
+    "controller": "user",
+    "action": "listClientUsers",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/users/:id/deactivate",
+    "controller": "user",
+    "action": "deactivate",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/users/:id/reactivate",
+    "controller": "user",
+    "action": "reactivate",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/:id/reset-password",
+    "controller": "user",
+    "action": "resetPassword",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/campaigns/:campaignId/pdf",
+    "controller": "report",
+    "action": "campaignPdf",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/campaigns/:campaignId/excel",
+    "controller": "report",
+    "action": "campaignExcel",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/campaigns/:campaignId",
+    "controller": "report",
+    "action": "campaignReportData",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/dashboard",
+    "controller": "portal",
+    "action": "dashboard",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/campaigns",
+    "controller": "portal",
+    "action": "campaigns",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/banner-url",
+    "controller": "upload",
+    "action": "presignBanner",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "presignBanner"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/uploads/local",
+    "controller": "upload",
+    "action": "receiveLocal",
+    "middlewares": []
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/uploads/local",
+    "controller": "upload",
+    "action": "serveLocal",
+    "middlewares": []
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sequences",
+    "controller": "sequence",
+    "action": "create",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sequences",
+    "controller": "sequence",
+    "action": "list",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sequences/:id",
+    "controller": "sequence",
+    "action": "getById",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/sequences/:id",
+    "controller": "sequence",
+    "action": "update",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ],
+    "validate": "update"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/sequences",
+    "controller": "portal",
+    "action": "sequences",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/sequences/:id",
+    "controller": "portal",
+    "action": "sequenceDetail",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/sequences/:sequenceId/pdf",
+    "controller": "report",
+    "action": "sequencePdf",
+    "middlewares": [
+      "authenticate"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/sequences/:sequenceId/excel",
+    "controller": "report",
+    "action": "sequenceExcel",
+    "middlewares": [
+      "authenticate"
+    ]
+  }
+]

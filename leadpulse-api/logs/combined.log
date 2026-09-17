@@ -1,0 +1,102 @@
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T06:11:26.000Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T06:11:26.020Z"}
+{"level":"info","message":"New Campaign Manager registered","timestamp":"2026-09-16T06:12:42.870Z","userId":"9b562fc4-8f52-4084-ac88-e40c3e750a39"}
+{"executiveId":"b4b52d8b-a542-4e31-a9e2-f884abdff0c3","level":"info","managerId":"9b562fc4-8f52-4084-ac88-e40c3e750a39","message":"Executive created","timestamp":"2026-09-16T06:18:37.964Z"}
+{"clientId":"06e16f83-e39a-4ad4-bd72-ee2cb8007544","level":"info","message":"Client portal user created","timestamp":"2026-09-16T06:20:13.238Z","userId":"4f16ad48-5382-4517-ae94-6996507f23df"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-16T06:33:08.176Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Lead list not found for this client.","path":"/api/v1/campaigns","timestamp":"2026-09-16T06:37:12.304Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Client not found.","path":"/api/v1/lead-lists?clientId=b4b52d8b-a542-4e31-a9e2-f884abdff0c3","timestamp":"2026-09-16T06:37:50.701Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Lead list not found for this client.","path":"/api/v1/campaigns","timestamp":"2026-09-16T06:38:54.454Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/leads?clientId=06e16f83-e39a-4ad4-bd72-ee2cb8007544&leadListId=3a9baf5-d400-4805-9ae3-aa13d3decd80","timestamp":"2026-09-16T06:58:49.581Z"}
+{"level":"error","message":"Unhandled error invalid input syntax for type uuid: \"3a9baf5-d400-4805-9ae3-aa13d3decd80\"","path":"/api/v1/leads?clientId=06e16f83-e39a-4ad4-bd72-ee2cb8007544&leadListId=3a9baf5-d400-4805-9ae3-aa13d3decd80","stack":"Error\n    at Query.run (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.select (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:407:12)\n    at async LeadListMembership.findAll (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1140:21)\n    at async LeadService.list (D:\\leadpulse-workspace-14\\leadpulse-workspace\\leadpulse-api\\app\\components\\lead\\lead.service.js:67:23)\n    at async D:\\leadpulse-workspace-14\\leadpulse-workspace\\leadpulse-api\\app\\components\\lead\\lead.controller.js:44:20","timestamp":"2026-09-16T06:59:37.230Z"}
+{"level":"error","message":"Unhandled error Expected property name or '}' in JSON at position 2 (line 1 column 3)","path":"/api/v1/call/leads/5c7df519-e098-4e32-9e00-1d187f6a72ab/remarks","stack":"SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)\n    at JSON.parse (<anonymous>)\n    at parse (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\body-parser\\lib\\types\\json.js:91:21)\n    at D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\body-parser\\lib\\read.js:162:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:227:14)\n    at invokeCallback (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\raw-body\\index.js:238:16)\n    at done (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:509:28)\n    at endReadableNT (node:internal/streams/readable:1736:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2026-09-16T07:18:59.942Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/leads/de4165e4-fec3-4648-a7d0-c1c720521cec/remarks","timestamp":"2026-09-16T07:23:51.808Z"}
+{"code":"FORBIDDEN","level":"warn","message":"You do not have permission to perform this action","path":"/api/v1/call/campaigns/c57c7140-c1d4-4ad2-89f5-d4687798075f/pending-conversions","timestamp":"2026-09-16T07:35:36.688Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Authentication required","path":"/api/v1/campaigns/c57c7140-c1d4-4ad2-89f5-d4687798075f/end","timestamp":"2026-09-16T07:41:07.115Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid email or password.","path":"/api/v1/auth/login","timestamp":"2026-09-16T07:43:47.845Z"}
+{"code":"FORBIDDEN","level":"warn","message":"You do not have permission to perform this action","path":"/api/v1/portal/dashboard","timestamp":"2026-09-16T07:44:52.421Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET /favicon.ico not found","path":"/favicon.ico","timestamp":"2026-09-16T08:32:33.612Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET / not found","path":"/","timestamp":"2026-09-16T08:32:56.193Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T09:48:51.487Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T09:48:51.500Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/leads?clientId=06e16f83-e39a-4ad4-bd72-ee2cb8007544","timestamp":"2026-09-16T10:06:46.004Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-16T10:25:08.621Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T10:31:36.353Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T10:31:36.365Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T10:32:58.873Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T10:32:58.884Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}}</p>","level":"info","message":"updates: ","subjectLine":"Hello {{first_name}}","timestamp":"2026-09-16T10:33:10.543Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T10:34:22.369Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T10:34:22.378Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}}</p>","level":"info","message":"updates: ","subjectLine":"Hello {{first_name}}","timestamp":"2026-09-16T10:34:28.594Z","type":"email"}
+{"code":"BUSINESS_RULE_ERROR","level":"warn","message":"Email campaigns need a subject line, sender name, and body before approval.","path":"/api/v1/campaigns/3264380a-d978-49f9-8988-f3aa6c4ad182/approve","timestamp":"2026-09-16T10:35:53.622Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}}</p>","level":"info","message":"updates: ","senderName":"Acme Agency","subjectLine":"Quick question, {{first_name}}","timestamp":"2026-09-16T10:38:24.553Z","type":"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>"}
+{"level":"error","message":"Unhandled error invalid input value for enum enum_campaigns_type: \"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>\"","path":"/api/v1/campaigns/3264380a-d978-49f9-8988-f3aa6c4ad182","stack":"Error\n    at Query.run (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.update (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:355:12)\n    at async model.save (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:2490:35)\n    at async model.update (D:\\leadpulse-workspace-14\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:2598:12)\n    at async CampaignService.update (D:\\leadpulse-workspace-14\\leadpulse-workspace\\leadpulse-api\\app\\components\\campaign\\campaign.service.js:144:5)\n    at async D:\\leadpulse-workspace-14\\leadpulse-workspace\\leadpulse-api\\app\\components\\campaign\\campaign.controller.js:16:22","timestamp":"2026-09-16T10:38:24.568Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>","level":"info","message":"updates: ","senderName":"Acme Agency","subjectLine":"Quick question, {{first_name}}","timestamp":"2026-09-16T10:39:05.137Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/email/campaigns/3264380a-d978-49f9-8988-f3aa6c4ad182/dispatch","timestamp":"2026-09-16T10:40:36.801Z"}
+{"failed":0,"jobId":"37f0c3e2-9ec6-49c0-9fed-99ef349f02c9","level":"info","message":"Email dispatch finished","sent":3,"suppressed":0,"timestamp":"2026-09-16T10:41:41.457Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/lead-lists?clientId=06e16f83-e39a-4ad4-bd72-ee2cb8007544","timestamp":"2026-09-16T11:08:21.288Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>","level":"info","message":"updates: ","senderName":"Acme Agency","subjectLine":"Quick question, {{first_name}}","timestamp":"2026-09-16T11:11:34.857Z"}
+{"failed":0,"jobId":"db450e12-c48e-403d-84e9-b0c3542e8fa4","level":"info","message":"Email dispatch finished","sent":4,"suppressed":0,"timestamp":"2026-09-16T11:13:06.333Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T11:39:41.375Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T11:39:41.404Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T12:01:48.375Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T12:01:48.400Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T12:02:43.077Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T12:02:43.091Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T12:05:15.337Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T12:05:15.348Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T12:08:08.574Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T12:08:08.588Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>","level":"info","message":"updates: ","senderName":"Acme Agency","subjectLine":"Hello {{first_name}}","timestamp":"2026-09-16T12:13:09.778Z"}
+{"emailBodyHtml":"<p>Hi {{first_name}} at {{company}},</p><p>We help teams like yours. <a href=\"https://example.com/offer\">See how</a>.</p><p><a href=\"http://localhost:4000/api/v1/track/convert?token=PLACEHOLDER\">I'm interested</a></p>","excludeClosedLeads":false,"level":"info","message":"updates: ","senderName":"Acme Agency","subjectLine":"Hello {{first_name}}","timestamp":"2026-09-16T12:14:31.869Z"}
+{"failed":0,"jobId":"dd4da5c1-e65b-4c63-8180-b6aebf72c7d7","level":"info","message":"Email dispatch finished","sent":4,"suppressed":0,"timestamp":"2026-09-16T12:15:37.965Z"}
+{"clientId":"06e16f83-e39a-4ad4-bd72-ee2cb8007544","leadId":"d9ba4c67-15ec-4e1a-bfd3-fd73d57a3e39","level":"info","message":"Hard bounce — address suppressed for this client","timestamp":"2026-09-16T12:15:54.729Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:27:33.778Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:27:33.797Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:28:44.942Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:28:44.957Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:28:56.282Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:28:56.295Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:29:20.140Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:29:20.155Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:29:54.945Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:29:54.957Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:31:24.115Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:31:24.131Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:32:53.896Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:32:53.909Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:33:25.964Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:33:25.977Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:33:33.970Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:33:33.980Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T13:51:50.125Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T13:51:50.138Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET /login not found","path":"/login","timestamp":"2026-09-16T13:55:16.673Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET /favicon.ico not found","path":"/favicon.ico","timestamp":"2026-09-16T13:55:16.908Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:05:45.558Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:06:42.693Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:08:46.563Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:09:32.341Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:09:32.349Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:09:44.042Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:30:56.152Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:30:56.166Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:31:59.589Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:41:58.221Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:43:41.718Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:46:39.694Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T14:46:45.378Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:48:08.818Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:48:08.845Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:48:31.648Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:48:31.661Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:49:11.823Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:49:11.851Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T14:49:50.160Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T14:49:50.168Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid email or password.","path":"/api/v1/auth/login","timestamp":"2026-09-16T15:14:10.395Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T15:14:44.902Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"reCAPTCHA verification failed. Please try again.","path":"/api/v1/auth/login","timestamp":"2026-09-16T15:14:49.615Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-16T15:59:02.386Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-16T15:59:02.395Z"}

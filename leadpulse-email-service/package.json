@@ -1,0 +1,21 @@
+{
+  "name": "leadpulse-email-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone microservice: accepts a send request, dispatches it (currently stubbed with a log — swap in SendGrid/Nodemailer here later without touching the main API at all).",
+  "main": "app/server.js",
+  "scripts": {
+    "dev": "nodemon app/server.js",
+    "start": "node app/server.js"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "leadpulse-data-model": "^1.0.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

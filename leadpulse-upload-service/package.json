@@ -1,0 +1,22 @@
+{
+  "name": "leadpulse-upload-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lead Import Service: asynchronous CSV/XLSX parsing, row validation, batched upsert, error-file generation and import-job progress tracking.",
+  "main": "app/server.js",
+  "scripts": {
+    "dev": "nodemon app/server.js",
+    "start": "node app/server.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "leadpulse-data-model": "^1.0.0",
+    "winston": "^3.13.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

@@ -1,0 +1,2 @@
+row_number,first_name,last_name,email,phone,company,job_title,industry,source,error_reason
+"6","","NoFirstName","bad-email-no-at-sign","9000000005","BrokenCo","Analyst","Tech","Web","Missing or invalid email"

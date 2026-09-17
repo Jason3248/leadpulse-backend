@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+storage
+logs
+**/*.log
+.env
+.git
+test-*.js
+sample_leads_*.csv

@@ -1,0 +1,19 @@
+{
+  "name": "leadpulse-workspace",
+  "private": true,
+  "workspaces": [
+    "leadpulse-api",
+    "leadpulse-data-model",
+    "leadpulse-upload-service",
+    "leadpulse-email-service"
+  ],
+  "scripts": {
+    "dev": "node dev-all.js",
+    "dev:api": "npm run dev --workspace=leadpulse-api",
+    "dev:upload": "npm run dev --workspace=leadpulse-upload-service",
+    "dev:email": "npm run dev --workspace=leadpulse-email-service",
+    "migrate": "npm run migrate --workspace=leadpulse-data-model",
+    "migrate:undo": "npm run migrate:undo --workspace=leadpulse-data-model",
+    "migrate:status": "npm run migrate:status --workspace=leadpulse-data-model"
+  }
+}

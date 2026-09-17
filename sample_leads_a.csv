@@ -1,0 +1,4 @@
+first_name,last_name,email,phone,company,job_title,industry,source
+Ravi,Kumar,ravi.kumar@manufacturingco.com,9876543210,ManufacturingCo,VP Engineering,Manufacturing,LinkedIn
+Priya,Singh,priya.singh@manufacturingco.com,9876543211,ManufacturingCo,Director Ops,Manufacturing,LinkedIn
+John,Doe,john.doe@retailbrand.com,9876543212,RetailBrand,VP Sales,Retail,Referral

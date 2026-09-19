@@ -24,7 +24,7 @@ const escapeHtml = (value) =>
  * lead data is externally sourced (uploaded CSVs), so a company name
  * containing markup must never be able to inject into the email body.
  */
-function applyMergeVariables(html, { lead, campaignName, unsubscribeUrl, conversionUrl }) {
+function applyMergeVariables(html, { lead, campaignName, unsubscribeUrl }) {
   const values = {
     first_name: escapeHtml(lead.firstName),
     last_name: escapeHtml(lead.lastName),
@@ -33,9 +33,7 @@ function applyMergeVariables(html, { lead, campaignName, unsubscribeUrl, convers
     campaign_name: escapeHtml(campaignName),
     // Deliberately NOT escaped as text — this is a URL we generated
     // ourselves, inserted as a full anchor tag.
-    unsubscribe_link: `<a href="${unsubscribeUrl}">Unsubscribe</a>`,
-    conversion_link: `<a href="${conversionUrl}">I'm interested</a>`,
-    conversion_url: conversionUrl || ''
+    unsubscribe_link: `<a href="${unsubscribeUrl}">Unsubscribe</a>`
   };
 
   return html.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) =>
@@ -57,13 +55,11 @@ function rewriteLinksForTracking(html, { trackingBaseUrl, token }) {
 
 function buildEmailHtml({ campaign, lead, token, trackingBaseUrl }) {
   const unsubscribeUrl = `${trackingBaseUrl}/track/unsubscribe?token=${token}`;
-  const conversionUrl = `${trackingBaseUrl}/track/convert?token=${token}`;
 
   let html = applyMergeVariables(campaign.emailBodyHtml || '', {
     lead,
     campaignName: campaign.name,
-    unsubscribeUrl,
-    conversionUrl
+    unsubscribeUrl
   });
 
   if (campaign.bannerImageUrl) {
@@ -91,8 +87,7 @@ function buildSubject(campaign, lead) {
   return applyMergeVariables(campaign.subjectLine || '', {
     lead,
     campaignName: campaign.name,
-    unsubscribeUrl: '',
-    conversionUrl: ''
+    unsubscribeUrl: ''
   });
 }
 

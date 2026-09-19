@@ -50,6 +50,11 @@ class LeadController {
     res.status(200).json({ success: true, data: lead });
   });
 
+  getHistory = asyncHandler(async (req, res) => {
+    const history = await leadService.getHistory(req.params.id, req.user.id, req.query.clientId);
+    res.status(200).json({ success: true, data: history });
+  });
+
   updateDnc = asyncHandler(async (req, res) => {
     const lead = await leadService.setDnc(req.params.id, req.user.id, req.body.clientId, req.body.dnc);
     res.status(200).json({ success: true, data: lead });

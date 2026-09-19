@@ -114,8 +114,27 @@ class PortalService {
       }
     }
 
+    // Monthly Volume Chart (SRS 4.8.4)
+    let monthlyVolume = [];
+    if (campaignIds.length && totalLeadsTargeted > 0) {
+      const monthlyVolumeMap = {};
+      const campaignLeads = await CampaignLead.findAll({
+        where: { campaignId: { [Op.in]: campaignIds } },
+        attributes: ['id', 'addedAt']
+      });
+      campaignLeads.forEach(cl => {
+        if (cl.addedAt) {
+          const m = cl.addedAt.toISOString().slice(0, 7); // YYYY-MM
+          monthlyVolumeMap[m] = monthlyVolumeMap[m] || { month: m, leadsTargeted: 0 };
+          monthlyVolumeMap[m].leadsTargeted++;
+        }
+      });
+      monthlyVolume = Object.values(monthlyVolumeMap).sort((a, b) => a.month.localeCompare(b.month));
+    }
+
     return {
       client: { id: client.id, name: client.name },
+      monthlyVolume,
       totals: {
         campaigns: campaigns.length,
         emailCampaigns: emailCampaigns.length,
@@ -126,6 +145,83 @@ class PortalService {
         qualifiedLeads: qualified,
         convertedLeads: converted
       }
+    };
+  }
+
+  /**
+   * Paginated list of leads for this client.
+   * Redacts identities unless the lead has reached Qualified or Converted.
+   */
+  async portalLeads(user, { page = 1, pageSize = 25, status, leadListId, sequenceId } = {}) {
+    const client = await this._assertClient(user);
+
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safePageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 25));
+    const offset = (safePage - 1) * safePageSize;
+
+    // We only care about lists belonging to this client
+    const listWhere = { clientId: client.id };
+    if (leadListId) listWhere.id = leadListId;
+
+    const clientLists = await LeadListMembership.sequelize.models.LeadList.findAll({
+      where: listWhere,
+      attributes: ['id']
+    });
+    const clientListIds = clientLists.map(l => l.id);
+
+    if (!clientListIds.length) {
+      return { leads: [], pagination: { page: safePage, pageSize: safePageSize, total: 0, totalPages: 0 } };
+    }
+
+    const membershipWhere = { leadListId: { [Op.in]: clientListIds } };
+    if (status) membershipWhere.status = status;
+
+    // If sequenceId is provided, restrict to leads that are part of that sequence's campaigns
+    if (sequenceId) {
+      const campaigns = await Campaign.findAll({ where: { sequenceId, clientId: client.id }, attributes: ['id'] });
+      const campaignIds = campaigns.map(c => c.id);
+      if (!campaignIds.length) {
+        return { leads: [], pagination: { page: safePage, pageSize: safePageSize, total: 0, totalPages: 0 } };
+      }
+      const campaignLeads = await CampaignLead.findAll({
+        where: { campaignId: { [Op.in]: campaignIds } },
+        attributes: ['leadId']
+      });
+      membershipWhere.leadId = { [Op.in]: [...new Set(campaignLeads.map(cl => cl.leadId))] };
+    }
+
+    const { count, rows } = await LeadListMembership.findAndCountAll({
+      where: membershipWhere,
+      limit: safePageSize,
+      offset,
+      order: [['createdAt', 'DESC']],
+      include: [
+        { model: LeadListMembership.sequelize.models.Lead, as: 'lead' },
+        { model: LeadListMembership.sequelize.models.LeadList, as: 'leadList', attributes: ['id', 'name'] }
+      ]
+    });
+
+    const leads = rows.map((m) => {
+      const isVisible = m.status === MEMBERSHIP_STATUS.QUALIFIED || m.status === MEMBERSHIP_STATUS.CONVERTED;
+      return {
+        id: m.lead.id,
+        listName: m.leadList.name,
+        status: m.status,
+        industry: m.lead.industry,
+        jobTitle: m.lead.jobTitle,
+        company: m.lead.company,
+        // Redaction boundary
+        firstName: isVisible ? m.lead.firstName : 'Hidden',
+        lastName: isVisible ? m.lead.lastName : 'Hidden',
+        email: isVisible ? m.lead.email : 'Hidden',
+        phone: isVisible ? m.lead.phone : 'Hidden',
+        source: isVisible ? m.lead.source : 'Hidden'
+      };
+    });
+
+    return {
+      leads,
+      pagination: { page: safePage, pageSize: safePageSize, total: count, totalPages: Math.ceil(count / safePageSize) }
     };
   }
 
@@ -211,6 +307,67 @@ class PortalService {
         };
       })
     );
+  }
+  /**
+   * Complete billing ledger for the client.
+   * Partitions active motions into cost-per-lead and flat-retainer.
+   */
+  async billingStatement(user) {
+    const client = await this._assertClient(user);
+
+    const sequences = await Sequence.findAll({ where: { clientId: client.id } });
+    const standaloneCampaigns = await Campaign.findAll({
+      where: { clientId: client.id, sequenceId: null }
+    });
+
+    const costPerLead = [];
+    const flatRetainer = [];
+
+    // Process sequences
+    for (const seq of sequences) {
+      const rollup = await sequenceRollup(seq.id);
+      if (!rollup || !rollup.billing) continue;
+      
+      if (rollup.billing.pricingModel === 'cost_per_lead') {
+        costPerLead.push({
+          name: seq.name,
+          conversions: rollup.billing.billableConversions,
+          rate: rollup.billing.ratePerLead,
+          createdAt: seq.createdAt
+        });
+      } else if (rollup.billing.pricingModel === 'flat_retainer') {
+        flatRetainer.push({
+          name: seq.name,
+          retainerAmount: rollup.billing.retainerAmount,
+          createdAt: seq.createdAt
+        });
+      }
+    }
+
+    // Process standalone campaigns
+    // For standalone campaigns, we need to import campaignBilling from sequenceBilling.service.js
+    const { campaignBilling } = require('../sequence/sequenceBilling.service.js');
+    for (const cmp of standaloneCampaigns) {
+      const billing = await campaignBilling(cmp);
+      if (!billing) continue;
+
+      if (billing.pricingModel === 'cost_per_lead') {
+        costPerLead.push({
+          name: cmp.name + ' (Campaign)',
+          conversions: billing.billableConversions,
+          rate: billing.ratePerLead,
+          createdAt: cmp.createdAt
+        });
+      } else if (billing.pricingModel === 'flat_retainer') {
+        flatRetainer.push({
+          name: cmp.name + ' (Campaign)',
+          retainerAmount: billing.retainerAmount,
+          createdAt: cmp.createdAt
+        });
+      }
+    }
+
+    return { costPerLead, flatRetainer };
   }
 }
 

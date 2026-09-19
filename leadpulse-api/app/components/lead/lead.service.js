@@ -125,6 +125,74 @@ class LeadService {
     return toPublicLead(lead, clientLead, memberships);
   }
 
+  async getHistory(id, managerId, clientId) {
+    if (!clientId) throw new ValidationError('clientId query parameter is required.');
+    await assertClientOwnership(clientId, managerId, { requireActive: false });
+
+    // Ensure they can access this lead
+    const clientLead = await ClientLead.findOne({ where: { clientId, leadId: id } });
+    if (!clientLead) throw new NotFoundError('Lead not found for this client.');
+
+    // Find all CampaignLeads for this lead and client
+    const { Campaign, CampaignLead, CallRemark, LeadEngagement, User } = require('leadpulse-data-model');
+    
+    const campaignLeads = await CampaignLead.findAll({
+      where: { leadId: id },
+      include: [
+        { 
+          model: Campaign, 
+          as: 'campaign', 
+          where: { clientId }, // only history for this client
+          attributes: ['id', 'name', 'type'] 
+        }
+      ]
+    });
+    const campaignLeadIds = campaignLeads.map(cl => cl.id);
+    
+    if (campaignLeadIds.length === 0) return { callHistory: [], emailEngagements: [] };
+
+    // Fetch Call Remarks
+    const callRemarks = await CallRemark.findAll({
+      where: { campaignLeadId: { [Op.in]: campaignLeadIds } },
+      include: [
+        { model: CampaignLead, as: 'campaignLead', include: [{ model: Campaign, as: 'campaign', attributes: ['name'] }] },
+        { model: User, as: 'executive', attributes: ['firstName', 'lastName'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Fetch Email Engagements
+    const emailEngagements = await LeadEngagement.findAll({
+      where: { campaignLeadId: { [Op.in]: campaignLeadIds } },
+      include: [
+        { model: CampaignLead, as: 'campaignLead', include: [{ model: Campaign, as: 'campaign', attributes: ['name'] }] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    return {
+      callHistory: callRemarks.map(cr => ({
+        id: cr.id,
+        campaignName: cr.campaignLead.campaign.name,
+        executiveName: `${cr.executive.firstName} ${cr.executive.lastName}`,
+        outcome: cr.callOutcome,
+        notes: cr.notes,
+        duration: cr.callDurationMinutes,
+        createdAt: cr.createdAt
+      })),
+      emailEngagements: emailEngagements.map(ee => ({
+        id: ee.id,
+        campaignName: ee.campaignLead.campaign.name,
+        status: ee.status,
+        sentAt: ee.sentAt,
+        openedAt: ee.openedAt,
+        clickedAt: ee.clickedAt,
+        openCount: ee.openCount,
+        clickCount: ee.clickCount
+      }))
+    };
+  }
+
   async setDnc(id, managerId, clientId, dnc) {
     // Consent changes are real business activity — blocked for a
     // deactivated client, same as importing.

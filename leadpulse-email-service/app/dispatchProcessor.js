@@ -171,6 +171,7 @@ class EmailDispatchService
 
             const html = buildEmailHtml({ campaign, lead: cl.lead, token, trackingBaseUrl });
             const subject = buildSubject(campaign, cl.lead);
+
             const result = await sendEmail({
               to: cl.lead.email,
               subject,

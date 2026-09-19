@@ -15,5 +15,8 @@
     "migrate": "npm run migrate --workspace=leadpulse-data-model",
     "migrate:undo": "npm run migrate:undo --workspace=leadpulse-data-model",
     "migrate:status": "npm run migrate:status --workspace=leadpulse-data-model"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0"
   }
 }

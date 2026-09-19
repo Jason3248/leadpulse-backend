@@ -12,7 +12,7 @@ const {
   Sequelize,
   constants
 } = require('leadpulse-data-model');
-const { NotFoundError, BusinessRuleError, ValidationError } = require('../../lib');
+const { NotFoundError, BusinessRuleError, ValidationError, ConflictError } = require('../../lib');
 const assertClientOwnership = require('../client/assertClientOwnership.js');
 const { resolveAudienceLeadIds } = require('./audience.service.js');
 const notifications = require('../notification/notification.service.js');
@@ -45,6 +45,7 @@ const toPublicCampaign = (c) => ({
   subjectLine: c.subjectLine,
   senderName: c.senderName,
   replyToEmail: c.replyToEmail,
+  emailBodyHtml: c.emailBodyHtml,
   bannerImageUrl: c.bannerImageUrl,
   createdAt: c.createdAt
 });
@@ -71,6 +72,20 @@ class CampaignService
     {
       const seq = await Sequence.findOne({ where: { id: data.sequenceId, clientId: data.clientId } });
       if (!seq) throw new NotFoundError('Sequence not found for this client.');
+      if (seq.leadListId && seq.leadListId !== data.leadListId)
+      {
+        throw new BusinessRuleError('A campaign linked to a sequence must target the same lead list as the sequence.');
+      }
+      if (data.sequenceStepOrder !== undefined && data.sequenceStepOrder !== null)
+      {
+        const existingStep = await Campaign.findOne({
+          where: { sequenceId: data.sequenceId, sequenceStepOrder: data.sequenceStepOrder }
+        });
+        if (existingStep)
+        {
+          throw new ConflictError('Another campaign in this sequence already uses this step order.');
+        }
+      }
     }
 
     const campaign = await Campaign.create({
@@ -139,7 +154,31 @@ class CampaignService
       {
         throw new BusinessRuleError('That lead list is archived and cannot be used.');
       }
+      if (campaign.sequenceId)
+      {
+        const seq = await Sequence.findByPk(campaign.sequenceId);
+        if (seq && seq.leadListId && seq.leadListId !== updates.leadListId)
+        {
+          throw new BusinessRuleError('A campaign linked to a sequence must target the same lead list as the sequence.');
+        }
+      }
     }
+
+    if (updates.sequenceStepOrder !== undefined && updates.sequenceStepOrder !== null)
+    {
+      const seqId = campaign.sequenceId || updates.sequenceId;
+      if (seqId)
+      {
+        const existingStep = await Campaign.findOne({
+          where: { sequenceId: seqId, sequenceStepOrder: updates.sequenceStepOrder }
+        });
+        if (existingStep && existingStep.id !== campaign.id)
+        {
+          throw new ConflictError('Another campaign in this sequence already uses this step order.');
+        }
+      }
+    }
+
     logger.info("updates: ", updates);
     await campaign.update(updates);
     return this.getById(id, managerId);
@@ -277,6 +316,32 @@ class CampaignService
     );
 
     return this.getById(id, managerId);
+  }
+
+  async getStrandedLeads(id, managerId)
+  {
+    const campaign = await this._getOwnedCampaign(id, managerId, { requireActive: false });
+    if (campaign.type !== CAMPAIGN_TYPE.CALL)
+    {
+      throw new BusinessRuleError('Only call campaigns have queue assignment.');
+    }
+
+    const stranded = await CampaignLead.findAll({
+      where: {
+        campaignId: id,
+        assignedExecutiveId: null,
+        queueStatus: QUEUE_STATUS.PENDING
+      },
+      include: [{ model: Lead, as: 'lead', attributes: ['id', 'firstName', 'lastName', 'company'] }]
+    });
+
+    return stranded.map(cl => ({
+      leadId: cl.lead.id,
+      firstName: cl.lead.firstName,
+      lastName: cl.lead.lastName,
+      company: cl.lead.company,
+      addedAt: cl.addedAt
+    }));
   }
 
   /**
@@ -475,6 +540,24 @@ class CampaignService
       throw err; // ForbiddenError (deactivated client) surfaces as-is
     }
     return campaign;
+  }
+
+  async deleteDraftCampaign(id, managerId)
+  {
+    // 1. Fetch the campaign and ensure the manager actually owns its parent client
+    const campaign = await this._getOwnedCampaign(id, managerId, { requireActive: false });
+
+    // 2. Business Rule: Only draft campaigns can be deleted.
+    if (campaign.status !== CAMPAIGN_STATUS.DRAFT)
+    {
+      throw new BusinessRuleError('Only draft campaigns can be deleted. Once a campaign is approved, its data is permanent.');
+    }
+
+    // 3. Destroy the campaign record. 
+    // (If you have table associations with ON DELETE CASCADE, it will cleanly handle any child rows)
+    await campaign.destroy();
+
+    return { success: true, message: 'Draft campaign deleted successfully.' };
   }
 }
 

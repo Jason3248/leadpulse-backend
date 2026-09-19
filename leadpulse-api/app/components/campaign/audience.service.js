@@ -1,7 +1,7 @@
 'use strict';
 
-const { Lead, ClientLead, LeadListMembership, LeadList, Sequelize } = require('leadpulse-data-model');
-const { NotFoundError } = require('../../lib');
+const { Lead, ClientLead, LeadListMembership, LeadList, CampaignLead, Sequelize } = require('leadpulse-data-model');
+const { NotFoundError, BusinessRuleError } = require('../../lib');
 
 const { Op } = Sequelize;
 
@@ -32,6 +32,16 @@ async function resolveAudienceLeadIds(campaign) {
 
   const filters = campaign.segmentationFilters || {};
 
+  let allowedLeadIds = null;
+  if (filters.onlyFromCampaignId) {
+    const prior = await CampaignLead.findAll({
+      where: { campaignId: filters.onlyFromCampaignId },
+      attributes: ['leadId']
+    });
+    if (prior.length === 0) return [];
+    allowedLeadIds = prior.map(p => p.leadId);
+  }
+
   // Step 1-3: membership-level filtering on the source list.
   //
   // Note these are applied together, not as alternatives: a membershipStatus
@@ -40,6 +50,10 @@ async function resolveAudienceLeadIds(campaign) {
   // leads must set excludeClosedLeads to false — that contradiction is
   // rejected at creation time rather than silently resolved here.
   const membershipWhere = { leadListId: campaign.leadListId };
+  if (allowedLeadIds) {
+    membershipWhere.leadId = { [Op.in]: allowedLeadIds };
+  }
+
   if (filters.membershipStatus) {
     membershipWhere.status = filters.membershipStatus;
   }

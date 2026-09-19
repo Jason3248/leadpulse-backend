@@ -191,6 +191,37 @@ const notifications = {
          be a good fit for this campaign.</p>`
       )
     });
+  },
+
+  /** 4.10: Lead import completed with errors */
+  async leadImportCompletedWithErrors(manager, stats, errorFileUrl) {
+    await safeSend('leadImportCompletedWithErrors', {
+      to: manager.email,
+      subject: `Lead import completed with errors`,
+      html: wrap(
+        'Lead import completed with errors',
+        `<p>Your lead list import has finished, but some rows failed.</p>
+         <ul>
+           <li>Successful: ${stats.success}</li>
+           <li>Failed: ${stats.failed}</li>
+         </ul>
+         <p><a href="${escape(errorFileUrl)}">Download Error Report</a></p>`
+      )
+    });
+  },
+
+  /** 4.10: Lead import failed entirely */
+  async leadImportFailed(manager, errorReason) {
+    await safeSend('leadImportFailed', {
+      to: manager.email,
+      subject: `Lead import failed`,
+      html: wrap(
+        'Lead import failed',
+        `<p>Your lead list import failed to process.</p>
+         <p><strong>Reason:</strong> ${escape(errorReason)}</p>
+         <p>Please check your CSV and try again.</p>`
+      )
+    });
   }
 };
 

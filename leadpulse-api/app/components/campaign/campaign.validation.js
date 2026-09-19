@@ -73,7 +73,7 @@ const update = z
     categoryTag: z.string().trim().max(100).nullable().optional(),
     leadListId: z.string().uuid().optional(),
     type: z.string().optional(),
-    segmentationFilters,
+    segmentationFilters: segmentationFilters.nullable().optional(),
     excludeClosedLeads: z.boolean().optional(),
     pricingModel: z.enum(['flat_retainer', 'cost_per_lead']).nullable().optional(),
     retainerAmount: z.number().nonnegative().nullable().optional(),

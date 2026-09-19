@@ -109,6 +109,26 @@ class ReportDataService {
     // which looks like failure rather than "not measured". Fall back to sent.
     const base = delivered > 0 ? delivered : sent;
 
+    // Daily timeline for Opens and Clicks (SRS 4.8.2)
+    const timelineRows = await LeadEngagement.findAll({
+      where: { campaignLeadId: { [Op.in]: campaignLeadIds } },
+      attributes: ['openedAt', 'clickedAt']
+    });
+    const dailyTimelineMap = {};
+    timelineRows.forEach(row => {
+      const dO = row.openedAt ? row.openedAt.toISOString().slice(0, 10) : null;
+      if (dO) {
+         dailyTimelineMap[dO] = dailyTimelineMap[dO] || { date: dO, opens: 0, clicks: 0 };
+         dailyTimelineMap[dO].opens++;
+      }
+      const dC = row.clickedAt ? row.clickedAt.toISOString().slice(0, 10) : null;
+      if (dC) {
+         dailyTimelineMap[dC] = dailyTimelineMap[dC] || { date: dC, opens: 0, clicks: 0 };
+         dailyTimelineMap[dC].clicks++;
+      }
+    });
+    const dailyTimeline = Object.values(dailyTimelineMap).sort((a, b) => a.date.localeCompare(b.date));
+
     return {
       audience: campaignLeadIds.length,
       attempted,
@@ -119,6 +139,7 @@ class ReportDataService {
       converted,
       unsubscribed,
       bounced,
+      dailyTimeline,
       rates: {
         deliveryRate: rate(delivered, sent),
         openRate: rate(opened, base),
@@ -193,9 +214,22 @@ class ReportDataService {
       }
     });
 
+    // Daily Volume (Calls by date) for Call Analytics (SRS 4.8.3)
+    const dailyVolumeMap = {};
+    remarks.forEach(r => {
+      const d = r.createdAt.toISOString().slice(0, 10);
+      dailyVolumeMap[d] = dailyVolumeMap[d] || { date: d, totalCalls: 0, reached: 0 };
+      dailyVolumeMap[d].totalCalls++;
+      if (r.callOutcome === CALL_OUTCOME.ANSWERED) {
+         dailyVolumeMap[d].reached++;
+      }
+    });
+    const dailyVolume = Object.values(dailyVolumeMap).sort((a, b) => a.date.localeCompare(b.date));
+
     return {
       queue,
       outcomes,
+      dailyVolume,
       funnel: {
         total: campaignLeads.length,
         called: leadsWithRemark.size,
@@ -430,6 +464,138 @@ class ReportDataService {
       metrics,
       billing,
       observations: this.observations(campaign, metrics)
+    };
+  }
+
+  /**
+   * Agency-level ops dashboard.
+   * Total revenue (approximate from billing logic), active campaigns,
+   * and executive utilization.
+   */
+  async agencyDashboard(manager) {
+    const clients = await Client.findAll({ where: { managerId: manager.id } });
+    const clientIds = clients.map(c => c.id);
+
+    // 1. Total Active Campaigns
+    const activeCampaignsCount = await Campaign.count({
+      where: { clientId: { [Op.in]: clientIds }, status: 'active' }
+    });
+
+    // 2. Executive Utilization
+    // How many pending leads does each executive have across all active campaigns?
+    const execRows = await CampaignLead.sequelize.query(
+      `SELECT
+         ce.executive_user_id as "id",
+         u.first_name as "firstName",
+         u.last_name as "lastName",
+         COUNT(cl.id) as "pendingLeads"
+       FROM campaign_executives ce
+       JOIN users u ON ce.executive_user_id = u.id
+       JOIN campaign_leads cl ON cl.campaign_id = ce.campaign_id AND cl.assigned_executive_id = ce.executive_user_id
+       JOIN campaigns c ON c.id = ce.campaign_id
+       WHERE c.client_id IN (:clientIds)
+         AND c.status = 'active'
+         AND cl.queue_status IN ('pending', 'in_progress', 'skipped')
+       GROUP BY ce.executive_user_id, u.first_name, u.last_name
+       ORDER BY "pendingLeads" DESC`,
+      {
+        replacements: { clientIds: clientIds.length ? clientIds : [null] },
+        type: Sequelize.QueryTypes.SELECT
+      }
+    );
+
+    // 3. Approximate Revenue this month
+    // To do this simply, we can just grab all conversions confirmed this month.
+    // Plus any active retainer campaigns (prorated or total).
+    // For simplicity, we just pull the billing statement for all clients using portal.service.js logic?
+    // Let's do a direct SUM of confirmed conversions for cost_per_lead, plus flat retainers.
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const callConversions = await CallRemark.count({
+      include: [{
+        model: CampaignLead,
+        as: 'campaignLead',
+        include: [{
+          model: Campaign,
+          as: 'campaign',
+          where: {
+            clientId: { [Op.in]: clientIds },
+            pricingModel: 'cost_per_lead'
+          }
+        }]
+      }],
+      where: {
+        callOutcome: 'Converted',
+        conversionConfirmed: true,
+        confirmedAt: { [Op.gte]: startOfMonth }
+      }
+    });
+
+    const emailConversions = await LeadEngagement.count({
+      include: [{
+        model: CampaignLead,
+        as: 'campaignLead',
+        include: [{
+          model: Campaign,
+          as: 'campaign',
+          where: {
+            clientId: { [Op.in]: clientIds },
+            pricingModel: 'cost_per_lead'
+          }
+        }]
+      }],
+      where: {
+        convertedAt: { [Op.gte]: startOfMonth }
+      }
+    });
+
+    // We can't sum dynamically easily without fetching each campaign's costPerLead,
+    // so we'll fetch the campaigns and aggregate.
+    const cplCampaigns = await Campaign.findAll({
+      where: { clientId: { [Op.in]: clientIds }, pricingModel: 'cost_per_lead' }
+    });
+    const cplCampaignIds = cplCampaigns.map(c => c.id);
+
+    let accruedRevenue = 0;
+
+    if (cplCampaignIds.length) {
+       const recentCallConvs = await CallRemark.findAll({
+         include: [{ model: CampaignLead, as: 'campaignLead', attributes: ['campaignId'] }],
+         where: {
+           callOutcome: 'Converted',
+           conversionConfirmed: true,
+           confirmedAt: { [Op.gte]: startOfMonth }
+         }
+       });
+       recentCallConvs.forEach(cr => {
+         const cmp = cplCampaigns.find(c => c.id === cr.campaignLead.campaignId);
+         if (cmp) accruedRevenue += Number(cmp.ratePerLead || 0);
+       });
+
+       const recentEmailConvs = await LeadEngagement.findAll({
+         include: [{ model: CampaignLead, as: 'campaignLead', attributes: ['campaignId'] }],
+         where: { convertedAt: { [Op.gte]: startOfMonth } }
+       });
+       recentEmailConvs.forEach(le => {
+         const cmp = cplCampaigns.find(c => c.id === le.campaignLead.campaignId);
+         if (cmp) accruedRevenue += Number(cmp.ratePerLead || 0);
+       });
+    }
+
+    // Add retainers for active campaigns
+    const retainerCampaigns = await Campaign.findAll({
+      where: { clientId: { [Op.in]: clientIds }, pricingModel: 'flat_retainer', status: 'active' }
+    });
+    retainerCampaigns.forEach(c => {
+      accruedRevenue += Number(c.retainerAmount || 0);
+    });
+
+    return {
+      activeCampaigns: activeCampaignsCount,
+      estimatedMonthlyRevenue: accruedRevenue,
+      executiveUtilization: execRows
     };
   }
 }

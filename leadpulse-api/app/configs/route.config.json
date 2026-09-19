@@ -249,6 +249,16 @@
     ]
   },
   {
+    "method": "GET",
+    "path": "/api/v1/leads/:id/history",
+    "controller": "lead",
+    "action": "getHistory",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
     "method": "PATCH",
     "path": "/api/v1/leads/:id/dnc",
     "controller": "lead",
@@ -313,6 +323,16 @@
     "validate": "update"
   },
   {
+    "method": "DELETE",
+    "path": "/api/v1/campaigns/:id",
+    "controller": "campaign",
+    "action": "delete",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
     "method": "POST",
     "path": "/api/v1/campaigns/:id/executives",
     "controller": "campaign",
@@ -328,6 +348,16 @@
     "path": "/api/v1/campaigns/:id/executives/:executiveId",
     "controller": "campaign",
     "action": "unassignExecutive",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/campaigns/:id/stranded-leads",
+    "controller": "campaign",
+    "action": "strandedLeads",
     "middlewares": [
       "authenticate",
       "requireManager"
@@ -396,9 +426,29 @@
   },
   {
     "method": "GET",
+    "path": "/api/v1/call/my-metrics",
+    "controller": "call",
+    "action": "myMetrics",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/call/campaigns/:campaignId/next",
     "controller": "call",
     "action": "nextLead",
+    "middlewares": [
+      "authenticate",
+      "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/campaigns/:campaignId/history",
+    "controller": "call",
+    "action": "history",
     "middlewares": [
       "authenticate",
       "requireExecutive"
@@ -433,6 +483,26 @@
     "middlewares": [
       "authenticate",
       "requireExecutive"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/conversions/pending",
+    "controller": "call",
+    "action": "globalPendingConversions",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/call/callbacks/due",
+    "controller": "call",
+    "action": "globalCallbacksDue",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
     ]
   },
   {
@@ -639,6 +709,16 @@
   },
   {
     "method": "GET",
+    "path": "/api/v1/reports/agency-dashboard",
+    "controller": "report",
+    "action": "agencyDashboard",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/reports/campaigns/:campaignId/pdf",
     "controller": "report",
     "action": "campaignPdf",
@@ -679,6 +759,26 @@
     "path": "/api/v1/portal/campaigns",
     "controller": "portal",
     "action": "campaigns",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/leads",
+    "controller": "portal",
+    "action": "portalLeads",
+    "middlewares": [
+      "authenticate",
+      "requireClient"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/portal/billing",
+    "controller": "portal",
+    "action": "billing",
     "middlewares": [
       "authenticate",
       "requireClient"

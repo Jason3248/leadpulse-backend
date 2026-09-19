@@ -22,11 +22,8 @@ const logger = require('../../configs/logger.js');
 const { Op } = Sequelize;
 const { ROLES, QUEUE_STATUS } = constants;
 
-/**
- * Generates a temporary password that satisfies the SRS password policy by
- * construction, rather than generating randomly and hoping it passes.
- */
-function generateTemporaryPassword() {
+function generateTemporaryPassword()
+{
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const lower = 'abcdefghijkmnopqrstuvwxyz';
   const digits = '23456789';
@@ -38,7 +35,8 @@ function generateTemporaryPassword() {
   while (chars.length < 12) chars.push(pick(all));
 
   // Fisher-Yates, so the guaranteed characters aren't always in positions 0-3.
-  for (let i = chars.length - 1; i > 0; i--) {
+  for (let i = chars.length - 1; i > 0; i--)
+  {
     const jdx = crypto.randomInt(0, i + 1);
     [chars[i], chars[jdx]] = [chars[jdx], chars[i]];
   }
@@ -57,13 +55,15 @@ const toPublicUser = (user) => ({
   createdAt: user.createdAt
 });
 
-class UserService {
+class UserService
+{
   /**
    * Create an Executive under this Manager (SRS 4.2.1). The temporary
    * password is emailed and never persisted in plain form — it exists in
    * memory only long enough to hash it and send it.
    */
-  async createExecutive({ managerId, firstName, lastName, email, temporaryPassword }) {
+  async createExecutive({ managerId, firstName, lastName, email, temporaryPassword })
+  {
     const normalizedEmail = email.toLowerCase();
 
     const existing = await User.findOne({ where: { email: normalizedEmail } });
@@ -87,11 +87,9 @@ class UserService {
     return toPublicUser(executive);
   }
 
-  /**
-   * Create a read-only Client portal login (SRS 4.11). Scoped to one
-   * Client, which must belong to this Manager.
-   */
-  async createClientUser({ managerId, clientId, firstName, lastName, email, temporaryPassword }) {
+
+  async createClientUser({ managerId, clientId, firstName, lastName, email, temporaryPassword })
+  {
     const client = await assertClientOwnership(clientId, managerId, { requireActive: true });
 
     const normalizedEmail = email.toLowerCase();
@@ -110,7 +108,6 @@ class UserService {
       email: normalizedEmail,
       passwordHash
     });
-
     await notifications.clientPortalCredentials(portalUser, client.name, plainPassword);
     logger.info('Client portal user created', { userId: portalUser.id, clientId });
 
@@ -118,14 +115,16 @@ class UserService {
   }
 
   /** The Team page (SRS 4.2.3): executives with their current workload. */
-  async listExecutives(managerId) {
+  async listExecutives(managerId)
+  {
     const executives = await User.findAll({
       where: { managerId, role: ROLES.EXECUTIVE },
       order: [['createdAt', 'DESC']]
     });
 
     return Promise.all(
-      executives.map(async (exec) => {
+      executives.map(async (exec) =>
+      {
         const activeAssignments = await CampaignExecutive.findAll({
           where: { executiveUserId: exec.id, isActive: true },
           attributes: ['campaignId']
@@ -134,9 +133,9 @@ class UserService {
 
         const campaigns = campaignIds.length
           ? await Campaign.findAll({
-              where: { id: { [Op.in]: campaignIds } },
-              attributes: ['id', 'name', 'status']
-            })
+            where: { id: { [Op.in]: campaignIds } },
+            attributes: ['id', 'name', 'status']
+          })
           : [];
 
         const callsLogged = await CallRemark.count({ where: { executiveUserId: exec.id } });
@@ -145,13 +144,13 @@ class UserService {
         // leads strands them — the Manager needs to see this before acting.
         const openLeads = campaignIds.length
           ? await CampaignLead.count({
-              where: {
-                assignedExecutiveId: exec.id,
-                queueStatus: {
-                  [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED]
-                }
+            where: {
+              assignedExecutiveId: exec.id,
+              queueStatus: {
+                [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED]
               }
-            })
+            }
+          })
           : 0;
 
         return {
@@ -164,7 +163,8 @@ class UserService {
     );
   }
 
-  async listClientUsers(managerId, clientId) {
+  async listClientUsers(managerId, clientId)
+  {
     if (clientId) await assertClientOwnership(clientId, managerId, { requireActive: false });
 
     const where = { managerId, role: ROLES.CLIENT };
@@ -179,14 +179,17 @@ class UserService {
    * immediate: without it, an already-issued access token would keep
    * working until it expired on its own.
    */
-  async setActive(userId, managerId, isActive) {
+  async setActive(userId, managerId, isActive)
+  {
     const user = await this._getManagedUser(userId, managerId);
 
-    if (user.isActive === isActive) {
+    if (user.isActive === isActive)
+    {
       return toPublicUser(user);
     }
 
-    if (!isActive && user.role === ROLES.EXECUTIVE) {
+    if (!isActive && user.role === ROLES.EXECUTIVE)
+    {
       // Documented, deliberate limitation: we warn rather than block or
       // auto-reassign. The Manager decides what happens to the leads.
       const openLeads = await CampaignLead.count({
@@ -195,7 +198,8 @@ class UserService {
           queueStatus: { [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED] }
         }
       });
-      if (openLeads > 0) {
+      if (openLeads > 0)
+      {
         logger.warn('Deactivating an executive who still holds open leads', { userId: user.id, openLeads });
       }
     }
@@ -213,9 +217,11 @@ class UserService {
    * single-use token as the self-service flow rather than setting a new
    * password directly — the Manager never learns the user's password.
    */
-  async triggerPasswordReset(userId, managerId) {
+  async triggerPasswordReset(userId, managerId)
+  {
     const user = await this._getManagedUser(userId, managerId);
-    if (!user.isActive) {
+    if (!user.isActive)
+    {
       throw new BusinessRuleError('This account is deactivated. Reactivate it before resetting the password.');
     }
 
@@ -238,7 +244,8 @@ class UserService {
     return { message: 'A password reset link has been sent.' };
   }
 
-  async _getManagedUser(userId, managerId) {
+  async _getManagedUser(userId, managerId)
+  {
     const user = await User.findOne({
       where: { id: userId, managerId, role: { [Op.in]: [ROLES.EXECUTIVE, ROLES.CLIENT] } }
     });

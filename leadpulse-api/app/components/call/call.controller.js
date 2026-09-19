@@ -13,12 +13,24 @@ class CallController
     res.status(200).json({ success: true, data: campaigns });
   });
 
+  myMetrics = asyncHandler(async (req, res) =>
+  {
+    const metrics = await callService.myMetrics(req.user.id);
+    res.status(200).json({ success: true, data: metrics });
+  });
+
   nextLead = asyncHandler(async (req, res) =>
   {
     const card = await callService.getNextLead(req.params.campaignId, req.user.id);
     // Null means the queue is exhausted — a normal, expected end state, not
     // an error, so the client can show "you're done" rather than a failure.
     res.status(200).json({ success: true, data: card, queueExhausted: card === null });
+  });
+
+  history = asyncHandler(async (req, res) =>
+  {
+    const history = await callService.getHistory(req.params.campaignId, req.user.id);
+    res.status(200).json({ success: true, data: history });
   });
 
   logRemark = asyncHandler(async (req, res) =>
@@ -53,6 +65,18 @@ class CallController
   {
     const pending = await callService.pendingConversions(req.params.campaignId, req.user.id);
     res.status(200).json({ success: true, data: pending });
+  });
+
+  globalPendingConversions = asyncHandler(async (req, res) =>
+  {
+    const pending = await callService.globalPendingConversions(req.user.id);
+    res.status(200).json({ success: true, data: pending });
+  });
+
+  globalCallbacksDue = asyncHandler(async (req, res) =>
+  {
+    const callbacks = await callService.globalCallbacksDue(req.user.id);
+    res.status(200).json({ success: true, data: callbacks });
   });
 
   reviewConversion = asyncHandler(async (req, res) =>

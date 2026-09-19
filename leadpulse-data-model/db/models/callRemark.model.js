@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       callDurationMinutes: { type: DataTypes.INTEGER, allowNull: true },
       notes: { type: DataTypes.TEXT, allowNull: true },
-      followUpDate: { type: DataTypes.DATEONLY, allowNull: true },
+      followUpDate: { type: DataTypes.DATE, allowNull: true },
       leadStatusUpdate: {
         type: DataTypes.ENUM('New', 'Contacted', 'Qualified', 'Converted', 'Dead'),
         allowNull: true

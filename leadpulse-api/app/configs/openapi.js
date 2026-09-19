@@ -173,8 +173,9 @@ const DOCS = {
   'PATCH /api/v1/campaigns/:id/resume': { summary: 'Resume', tables: 'WRITE campaigns (status).' },
   'PATCH /api/v1/campaigns/:id/end': { summary: 'End early', desc: 'Terminal. For call campaigns, sweeps still-open queue rows to "skipped" without touching the leads\' own status.', tables: 'WRITE campaigns (status), campaign_leads (queueStatus).' },
 
-  // ---- CALL ENGINE ----
-  'GET /api/v1/call/my-campaigns': { summary: '[Executive] My assigned call campaigns', desc: 'With my pending-lead count per campaign.', tables: 'READ campaign_executives, campaigns, clients, campaign_leads.' },
+  // ---- CALL CAMPAIGNS & QUEUE (call role) ----
+  'GET /api/v1/call/my-campaigns': { summary: '[Executive] Assigned campaigns', desc: 'Lists only active call campaigns this executive is assigned to. Includes a live count of pending (unexhausted) leads in their slice.', tables: 'READ campaign_executives, campaigns, campaign_leads.' },
+  'GET /api/v1/call/my-metrics': { summary: '[Executive] My Daily Stats', desc: 'Aggregated metrics for the logged-in executive across all their assigned active campaigns: calls made today, conversions claimed today, total pending leads, and overdue callbacks.', tables: 'READ campaign_executives, campaigns, campaign_leads, call_remarks.' },
   'GET /api/v1/call/campaigns/:campaignId/next': {
     summary: '[Executive] Serve the next lead (Call Card)',
     desc: 'Oldest pending/in-progress/called lead in MY slice. Runs the LIVE contactability check first: a lead now DNC or already Converted/Dead elsewhere is skipped on the spot. Returns null + queueExhausted when done.',
@@ -184,7 +185,7 @@ const DOCS = {
     summary: '[Executive] Log a call outcome',
     desc: 'Creates a remark and advances the queue. Not Interested -> Dead automatically; Converted -> waits for review; Callback Requested -> stays in_progress (needs followUpDate); anything else -> at least Contacted.',
     tables: 'WRITE call_remarks, campaign_leads (queueStatus), lead_list_memberships (status).',
-    body: { callOutcome: 'Callback Requested', callDurationMinutes: 3, notes: 'Call back Tuesday', followUpDate: '2026-02-01' }
+    body: { callOutcome: 'Callback Requested', callDurationMinutes: 3, notes: 'Call back Tuesday', followUpDate: '2026-02-01T14:30:00Z' }
   },
   'POST /api/v1/call/leads/:campaignLeadId/skip': {
     summary: '[Executive] Skip a lead — no call happened',
@@ -197,6 +198,15 @@ const DOCS = {
     tables: 'READ campaign_leads, leads, call_remarks.'
   },
   'GET /api/v1/call/campaigns/:campaignId/callbacks-due': { summary: 'Callbacks due/overdue', desc: 'Only the LATEST remark per lead counts, so a superseded callback drops off. Manager sees all; executive sees own. Each entry\'s campaignLeadId can be passed to GET /call/leads/{campaignLeadId} for the full card before acting on it.', tables: 'READ campaign_leads, leads, call_remarks.' },
+  'GET /api/v1/call/campaigns/:campaignId/history': {
+    summary: '[Executive] Campaign Call History',
+    desc: 'A paginated list of all leads an executive has completed in a given campaign, sorted by their latest activity. A lead is considered completed if it reached queueExhausted = true. Useful for reviewing past work and auditing outcomes.',
+    tables: 'READ campaign_leads, call_remarks, leads.',
+    query: [
+      { name: 'page', type: 'integer', example: 1 },
+      { name: 'pageSize', type: 'integer', desc: 'Max 100', example: 25 }
+    ]
+  },
   'GET /api/v1/call/campaigns/:campaignId/pending-conversions': { summary: '[Manager] Conversion review inbox', desc: 'Claimed conversions awaiting confirmation.', tables: 'READ campaign_leads, call_remarks, leads, users.' },
   'PATCH /api/v1/call/remarks/:remarkId/review': {
     summary: '[Manager] Confirm or reject a conversion',
@@ -295,6 +305,7 @@ const DOCS = {
     tables: 'as the sequence PDF.'
   },
   'GET /api/v1/reports/campaigns/:campaignId': { summary: 'Report data as JSON', desc: 'The same figures the PDF/Excel are built from.', tables: 'as PDF.' },
+  'GET /api/v1/reports/agency-dashboard': { summary: '[Manager] Agency Dashboard', desc: 'Total estimated revenue this month, total active campaigns, and a breakdown of executive utilization (pending leads per executive across all active campaigns).', tables: 'READ campaigns, campaign_leads, call_remarks, lead_engagements, campaign_executives, users.' },
 
   // ---- PORTAL (client role) ----
   'GET /api/v1/portal/dashboard': {
@@ -313,6 +324,18 @@ const DOCS = {
   },
   'GET /api/v1/portal/sequences/:id': { summary: '[Client] One motion in detail', desc: 'Same draft-hiding as the list. Scoped to their own clientId — another client\'s sequence, or one with no visible steps yet, is simply not found.', tables: 'as portal/sequences.' },
   'GET /api/v1/portal/campaigns': { summary: '[Client] Campaign history', desc: 'Status, type, audience size, and whether each is a sequence step or standalone. Draft campaigns are excluded. No identities.', tables: 'READ clients, campaigns, campaign_leads.' },
+  'GET /api/v1/portal/leads': {
+    summary: '[Client] My Leads',
+    desc: 'Paginated list of leads. Redacts identities unless the lead has reached Qualified or Converted.',
+    tables: 'READ lead_list_memberships, leads, clients.',
+    query: [
+      { name: 'leadListId', desc: 'Restrict to one lead list' },
+      { name: 'sequenceId', desc: 'Restrict to one sequence' },
+      { name: 'status', enum: ['New', 'Contacted', 'Qualified', 'Converted', 'Dead'] },
+      { name: 'page', type: 'integer' },
+      { name: 'pageSize', type: 'integer' }
+    ]
+  },
   'GET /api/v1/portal/billing': {
     summary: '[Client] Billing statement — everything owed, grouped by pricing model',
     desc: 'Every priced sequence AND every priced standalone campaign, grouped into costPerLead / flatRetainer / unpriced. Each group has its own subtotal; the two priced groups are NEVER summed together — a cost-per-lead accrual and a flat retainer fee are different kinds of commitment, and blending them would produce a number matching no real invoice. Unlike the dashboard/sequence views, a priced unit with zero activity still appears here (a signed commitment is a financial fact even before work starts).',

@@ -118,6 +118,11 @@ class ReportController {
       }
     });
   });
+
+  agencyDashboard = asyncHandler(async (req, res) => {
+    const data = await reportData.agencyDashboard(req.user);
+    res.status(200).json({ success: true, data });
+  });
 }
 
 module.exports = ReportController;

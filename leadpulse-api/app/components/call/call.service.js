@@ -55,6 +55,95 @@ const toCallCard = (campaignLead, lead, previousRemarks) => ({
 class CallService
 {
   /**
+   * Daily aggregated metrics for the executive across all their assigned campaigns.
+   */
+  async myMetrics(executiveUserId) {
+    // 1. Pending Leads (across all active campaigns assigned to them)
+    const pendingLeads = await CampaignLead.count({
+      include: [{
+        model: Campaign,
+        as: 'campaign',
+        where: { status: CAMPAIGN_STATUS.ACTIVE, type: CAMPAIGN_TYPE.CALL }
+      }],
+      where: {
+        assignedExecutiveId: executiveUserId,
+        queueExhausted: false
+      }
+    });
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // 2. Calls Made Today
+    // We join via CampaignLead to ensure it's their lead, though normally an exec only
+    // remarks on their own leads anyway.
+    const callsMadeToday = await CallRemark.count({
+      include: [{
+        model: CampaignLead,
+        as: 'campaignLead',
+        where: { assignedExecutiveId: executiveUserId }
+      }],
+      where: {
+        createdAt: { [Op.between]: [startOfToday, endOfToday] }
+      }
+    });
+
+    // 3. Conversions Claimed Today
+    const conversionsClaimedToday = await CallRemark.count({
+      include: [{
+        model: CampaignLead,
+        as: 'campaignLead',
+        where: { assignedExecutiveId: executiveUserId }
+      }],
+      where: {
+        callOutcome: CALL_OUTCOME.CONVERTED,
+        createdAt: { [Op.between]: [startOfToday, endOfToday] }
+      }
+    });
+
+    // 4. Overdue Callbacks
+    // Similar to callbacksDue but across all their campaigns
+    const now = new Date();
+    const remarks = await CallRemark.findAll({
+      attributes: ['id', 'callOutcome', 'followUpDate', 'campaignLeadId'],
+      include: [
+        {
+          model: CampaignLead,
+          as: 'campaignLead',
+          where: { assignedExecutiveId: executiveUserId, queueExhausted: false },
+          include: [{
+            model: Campaign,
+            as: 'campaign',
+            where: { status: CAMPAIGN_STATUS.ACTIVE }
+          }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    
+    let overdueCallbacksCount = 0;
+    const seenLeads = new Set();
+    
+    for (const rm of remarks) {
+      if (!seenLeads.has(rm.campaignLeadId)) {
+        seenLeads.add(rm.campaignLeadId);
+        if (rm.callOutcome === CALL_OUTCOME.CALLBACK_REQUESTED && rm.followUpDate && new Date(rm.followUpDate) <= now) {
+          overdueCallbacksCount++;
+        }
+      }
+    }
+
+    return {
+      callsMadeToday,
+      conversionsClaimedToday,
+      totalPendingLeads: pendingLeads,
+      overdueCallbacksCount
+    };
+  }
+
+  /**
    * Serve the next lead in this executive's slice of the queue.
    *
    * Every candidate is run through the live contactability check before
@@ -71,6 +160,9 @@ class CallService
     {
       throw new BusinessRuleError(`This campaign is ${campaign.status} — its queue is not open.`);
     }
+
+    const cooldownMinutes = parseInt(process.env.COOLDOWN_MINUTES || '30', 10);
+    const cooldownThreshold = new Date(Date.now() - cooldownMinutes * 60 * 1000);
 
     // Bounded loop: each iteration either returns a card or retires one
     // uncontactable lead, so it always terminates.
@@ -94,20 +186,41 @@ class CallService
         where: {
           campaignId,
           assignedExecutiveId: executiveUserId,
-          queueStatus: { [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED] }
+          queueStatus: { [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED] },
+          [Op.and]: [
+            // Cooldown: skip leads worked in the last X minutes
+            sequelize.where(
+              sequelize.literal(
+                '(SELECT GREATEST((SELECT MAX(cr.created_at) FROM call_remarks cr WHERE cr.campaign_lead_id = "CampaignLead"."id"), "CampaignLead"."last_skipped_at"))'
+              ),
+              {
+                [Op.or]: {
+                  [Op.lt]: cooldownThreshold,
+                  [Op.is]: null
+                }
+              }
+            ),
+            // Callback: if there is a scheduled callback, don't show until it's due
+            sequelize.where(
+              sequelize.literal(`(
+                SELECT cr.follow_up_date 
+                FROM call_remarks cr 
+                WHERE cr.campaign_lead_id = "CampaignLead"."id" 
+                ORDER BY cr.created_at DESC 
+                LIMIT 1
+              )`),
+              {
+                [Op.or]: {
+                  [Op.lte]: new Date(),
+                  [Op.is]: null
+                }
+              }
+            )
+          ]
         },
         attributes: {
           include: [
             [
-              // Most recent remark time for this campaign_lead, or NULL if
-              // it has never been worked (a pending lead).
-              // Whichever is more recent: the last genuine call attempt, or
-              // the last time this lead was explicitly SKIPPED (no call
-              // happened, no call_remarks row exists for it — see
-              // skipLead()). GREATEST correctly ignores a NULL side, so a
-              // lead that's only ever been skipped (never called) still
-              // sorts by its skip time, and one that's only ever been
-              // called sorts by its call time, unaffected either way.
               sequelize.literal(
                 '(SELECT GREATEST((SELECT MAX(cr.created_at) FROM call_remarks cr WHERE cr.campaign_lead_id = "CampaignLead"."id"), "CampaignLead"."last_skipped_at"))'
               ),
@@ -161,6 +274,47 @@ class CallService
   }
 
   /**
+   * Session history for the executive in this campaign.
+   * Returns up to 20 recently worked leads in descending order of activity.
+   */
+  async getHistory(campaignId, executiveUserId)
+  {
+    const { campaign } = await this._assertExecutiveOnCampaign(campaignId, executiveUserId);
+
+    const history = await CampaignLead.findAll({
+      where: {
+        campaignId,
+        assignedExecutiveId: executiveUserId,
+        [Op.or]: [
+          { queueStatus: { [Op.ne]: QUEUE_STATUS.PENDING } },
+          { lastSkippedAt: { [Op.ne]: null } }
+        ]
+      },
+      attributes: {
+        include: [
+          [
+            sequelize.literal(
+              '(SELECT GREATEST((SELECT MAX(cr.created_at) FROM call_remarks cr WHERE cr.campaign_lead_id = "CampaignLead"."id"), "CampaignLead"."last_skipped_at"))'
+            ),
+            'lastWorkedAt'
+          ]
+        ]
+      },
+      order: [[sequelize.literal('"lastWorkedAt"'), 'DESC']],
+      limit: 20
+    });
+
+    return Promise.all(history.map(async (cl) => {
+      const lead = await Lead.findByPk(cl.leadId);
+      const previousRemarks = await CallRemark.findAll({
+        where: { campaignLeadId: cl.id },
+        order: [['createdAt', 'DESC']]
+      });
+      return toCallCard(cl, lead, previousRemarks);
+    }));
+  }
+
+  /**
    * Log the outcome of a call attempt and advance the queue.
    *
    * Status side-effects are deliberately asymmetric:
@@ -200,9 +354,9 @@ class CallService
         { transaction }
       );
 
-      // A callback keeps the lead open; every other outcome either resolves
-      // it or leaves it available for another attempt.
-      const queueStatus = TERMINAL_OUTCOMES.includes(data.callOutcome)
+      const pastAttempts = await CallRemark.count({ where: { campaignLeadId }, transaction });
+
+      const queueStatus = TERMINAL_OUTCOMES.includes(data.callOutcome) || pastAttempts >= 4
         ? QUEUE_STATUS.COMPLETED
         : data.callOutcome === CALL_OUTCOME.CALLBACK_REQUESTED
           ? QUEUE_STATUS.IN_PROGRESS
@@ -321,6 +475,100 @@ class CallService
     };
   }
 
+  async globalPendingConversions(managerId) {
+    // Get all campaigns owned by this manager
+    const ownedClientIds = (await Client.findAll({ where: { managerId }, attributes: ['id'] })).map(c => c.id);
+    if (ownedClientIds.length === 0) return [];
+    
+    const campaigns = await Campaign.findAll({ 
+      where: { clientId: { [Op.in]: ownedClientIds }, type: CAMPAIGN_TYPE.CALL },
+      attributes: ['id', 'name']
+    });
+    const campaignIds = campaigns.map(c => c.id);
+    if (campaignIds.length === 0) return [];
+
+    const remarks = await CallRemark.findAll({
+      where: {
+        callOutcome: CALL_OUTCOME.CONVERTED,
+        conversionConfirmed: null
+      },
+      include: [
+        { 
+          model: CampaignLead, 
+          as: 'campaignLead', 
+          where: { campaignId: { [Op.in]: campaignIds } },
+          include: [
+            { model: Lead, as: 'lead' },
+            { model: Campaign, as: 'campaign', attributes: ['id', 'name'] }
+          ] 
+        },
+        { model: User, as: 'executive', attributes: ['id', 'firstName', 'lastName'] }
+      ],
+      order: [['createdAt', 'ASC']]
+    });
+
+    return remarks.map((r) => ({
+      remarkId: r.id,
+      campaignId: r.campaignLead.campaign.id,
+      campaignName: r.campaignLead.campaign.name,
+      leadId: r.campaignLead.leadId,
+      leadName: `${r.campaignLead.lead.firstName} ${r.campaignLead.lead.lastName || ''}`.trim(),
+      company: r.campaignLead.lead.company,
+      notes: r.notes,
+      reportedBy: `${r.executive.firstName} ${r.executive.lastName}`,
+      reportedAt: r.createdAt
+    }));
+  }
+
+  async globalCallbacksDue(managerId) {
+    const ownedClientIds = (await Client.findAll({ where: { managerId }, attributes: ['id'] })).map(c => c.id);
+    if (ownedClientIds.length === 0) return [];
+
+    const campaigns = await Campaign.findAll({ 
+      where: { clientId: { [Op.in]: ownedClientIds }, type: CAMPAIGN_TYPE.CALL },
+      attributes: ['id', 'name']
+    });
+    const campaignIds = campaigns.map(c => c.id);
+    if (campaignIds.length === 0) return [];
+
+    const campaignLeads = await CampaignLead.findAll({
+      where: { campaignId: { [Op.in]: campaignIds } },
+      include: [
+        { model: Lead, as: 'lead' },
+        { model: Campaign, as: 'campaign', attributes: ['id', 'name'] }
+      ]
+    });
+    if (campaignLeads.length === 0) return [];
+
+    const now = new Date();
+    const due = [];
+
+    for (const cl of campaignLeads) {
+      const latest = await CallRemark.findOne({
+        where: { campaignLeadId: cl.id },
+        order: [['createdAt', 'DESC']]
+      });
+      if (!latest) continue;
+      if (latest.callOutcome !== CALL_OUTCOME.CALLBACK_REQUESTED) continue;
+      if (!latest.followUpDate || new Date(latest.followUpDate) > now) continue;
+
+      due.push({
+        campaignId: cl.campaign.id,
+        campaignName: cl.campaign.name,
+        campaignLeadId: cl.id,
+        leadId: cl.leadId,
+        leadName: `${cl.lead.firstName} ${cl.lead.lastName || ''}`.trim(),
+        company: cl.lead.company,
+        phone: cl.lead.phone,
+        followUpDate: latest.followUpDate,
+        notes: latest.notes,
+        overdue: new Date(latest.followUpDate) < now
+      });
+    }
+
+    return due.sort((a, b) => a.followUpDate.localeCompare(b.followUpDate));
+  }
+
   /** Conversions claimed but not yet reviewed — the manager's review inbox. */
   async pendingConversions(campaignId, managerId)
   {
@@ -379,7 +627,7 @@ class CallService
     });
     if (campaignLeads.length === 0) return [];
 
-    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
     const due = [];
 
     for (const cl of campaignLeads)
@@ -390,7 +638,7 @@ class CallService
       });
       if (!latest) continue;
       if (latest.callOutcome !== CALL_OUTCOME.CALLBACK_REQUESTED) continue; // superseded
-      if (!latest.followUpDate || latest.followUpDate > today) continue; // not due yet
+      if (!latest.followUpDate || new Date(latest.followUpDate) > now) continue; // not due yet
 
       due.push({
         campaignLeadId: cl.id,
@@ -400,7 +648,7 @@ class CallService
         phone: cl.lead.phone,
         followUpDate: latest.followUpDate,
         notes: latest.notes,
-        overdue: latest.followUpDate < today
+        overdue: new Date(latest.followUpDate) < now
       });
     }
 

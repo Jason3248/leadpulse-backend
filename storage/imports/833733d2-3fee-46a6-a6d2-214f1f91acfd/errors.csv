@@ -1,0 +1,2 @@
+row_number,first_name,last_name,email,phone,company,job_title,industry,source,error_reason
+"5","Placido","Furtado","","9000000004","DeltaCo","Marketing Manager","Retail","Web","Missing or invalid email"

@@ -74,47 +74,27 @@ class EmailController
   showConversionPage = asyncHandler(async (req, res) =>
   {
     const token = String(req.query.token || '').replace(/[^a-f0-9]/gi, '');
-    res.status(200).send(`<html><body style="font-family:sans-serif;text-align:center;padding:40px;">
-      <h2>Confirm your interest</h2>
-      <p>Click below and we'll be in touch shortly.</p>
-      <form method="POST" action="/api/v1/track/convert">
-        <input type="hidden" name="token" value="${token}" />
-        <button type="submit" style="padding:12px 24px;font-size:16px;">Yes, I'm interested</button>
-      </form>
-    </body></html>`);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/public/convert?token=${token}`);
   });
 
   trackConversion = asyncHandler(async (req, res) =>
   {
     const result = await trackingService.recordConversion(req.body.token || req.query.token);
-    res.status(200).send(
-      result
-        ? '<html><body><h2>Thank you for your interest!</h2><p>Someone will be in touch shortly.</p></body></html>'
-        : '<html><body><h2>Thank you.</h2></body></html>'
-    );
+    res.status(200).json({ success: true, converted: result });
   });
 
   showUnsubscribePage = asyncHandler(async (req, res) =>
   {
     const token = String(req.query.token || '').replace(/[^a-f0-9]/gi, '');
-    res.status(200).send(`<html><body style="font-family:sans-serif;text-align:center;padding:40px;">
-      <h2>Unsubscribe</h2>
-      <p>Confirm that you no longer wish to receive these emails.</p>
-      <form method="POST" action="/api/v1/track/unsubscribe">
-        <input type="hidden" name="token" value="${token}" />
-        <button type="submit" style="padding:12px 24px;font-size:16px;">Unsubscribe me</button>
-      </form>
-    </body></html>`);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/public/unsubscribe?token=${token}`);
   });
 
   trackUnsubscribe = asyncHandler(async (req, res) =>
   {
-    await trackingService.recordUnsubscribe(req.body.token || req.query.token);
-    // Identical response either way — a valid and an invalid token must be
-    // indistinguishable from the outside.
-    res.status(200).send(
-      '<html><body><h2>You have been unsubscribed.</h2><p>You will not receive further emails from this sender.</p></body></html>'
-    );
+    const result = await trackingService.recordUnsubscribe(req.body.token || req.query.token);
+    res.status(200).json({ success: true, unsubscribed: result });
   });
 
   webhook = asyncHandler(async (req, res) =>

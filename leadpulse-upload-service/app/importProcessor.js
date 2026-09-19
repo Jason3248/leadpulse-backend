@@ -8,10 +8,12 @@ const {
   LeadList,
   LeadListMembership,
   ImportJob,
+  User,
   sequelize,
   constants,
   storage
 } = require('leadpulse-data-model');
+const { sendEmail } = require('./utils/emailServiceClient.js');
 
 const { IMPORT_JOB_STATUS, MEMBERSHIP_STATUS } = constants;
 
@@ -157,12 +159,15 @@ async function processImportJob(jobId, logger) {
       { errorFileKey }
     );
     logger.info('Import job finished', { jobId, status: job.status, ...counters });
+    await notifyManager(job, true, null, errorFileKey, counters);
   } catch (err) {
     logger.error('Import job failed', { jobId, message: err.message, stack: err.stack });
     // The stored reason is user-safe — internals stay in the logs.
+    const reason = 'The file could not be processed. Please check the format and try again.';
     await finish(job, IMPORT_JOB_STATUS.FAILED, {
-      failureReason: 'The file could not be processed. Please check the format and try again.'
+      failureReason: reason
     });
+    await notifyManager(job, false, reason, null, null);
   }
 }
 
@@ -252,6 +257,56 @@ async function finish(job, status, extra = {}) {
     } catch (err) {
       // A failed cleanup shouldn't flip a successful import to failed.
     }
+  }
+}
+
+const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+
+async function notifyManager(job, isSuccess, errorReason, errorFileKey, counters) {
+  try {
+    const manager = await User.findByPk(job.startedByUserId);
+    if (!manager) return;
+
+    const wrap = (heading, bodyHtml) => `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#1a56db;">${heading}</h2>
+        ${bodyHtml}
+        <hr style="margin-top:24px;border:none;border-top:1px solid #eee;" />
+        <p style="font-size:12px;color:#888;">Sent by LeadPulse.</p>
+      </div>`;
+
+    if (isSuccess) {
+      if (counters && counters.failed > 0) {
+        // Only notify for completed WITH ERRORS (the UI polls for normal success)
+        const link = errorFileKey ? `${APP_URL}/api/v1/leads/imports/${job.id}/errors` : '#';
+        await sendEmail({
+          to: manager.email,
+          subject: 'Lead import completed with errors',
+          html: wrap(
+            'Lead import completed with errors',
+            `<p>Your lead list import has finished, but some rows failed.</p>
+             <ul>
+               <li>Successful: ${counters.successful}</li>
+               <li>Failed: ${counters.failed}</li>
+             </ul>
+             <p><a href="${link}">Download Error Report</a></p>`
+          )
+        });
+      }
+    } else {
+      await sendEmail({
+        to: manager.email,
+        subject: 'Lead import failed',
+        html: wrap(
+          'Lead import failed',
+          `<p>Your lead list import failed to process.</p>
+           <p><strong>Reason:</strong> ${errorReason}</p>
+           <p>Please check your CSV and try again.</p>`
+        )
+      });
+    }
+  } catch (err) {
+    console.error('Failed to send import notification', err);
   }
 }
 

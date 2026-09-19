@@ -23,6 +23,16 @@ class PortalController {
     const campaigns = await portalService.campaigns(req.user);
     res.status(200).json({ success: true, data: campaigns });
   });
+
+  portalLeads = asyncHandler(async (req, res) => {
+    const data = await portalService.portalLeads(req.user, req.query);
+    res.status(200).json({ success: true, data });
+  });
+
+  billing = asyncHandler(async (req, res) => {
+    const data = await portalService.billingStatement(req.user);
+    res.status(200).json({ success: true, data });
+  });
 }
 
 module.exports = PortalController;

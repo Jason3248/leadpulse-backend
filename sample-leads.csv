@@ -2,5 +2,4 @@ first_name,last_name,email,phone,company,job_title,industry,source
 Jason,Dsouza,jasondsouza923@gmail.com,9000000001,AlphaCo,VP Engineering,Manufacturing,LinkedIn
 Abhinav,Jaiswal,jasondsouza823@gmail.com,9000000002,BetaCo,VP Sales,Manufacturing,LinkedIn
 Aryan,Yadav,jasonndsouza7@gmail.com,9000000003,GammaCo,Director Ops,Retail,Referral
-Placido,Furtado,dan@example.com,9000000004,DeltaCo,Marketing Manager,Retail,Web
-,NoFirstName,bad-email-no-at-sign,9000000005,BrokenCo,Analyst,Tech,Web
+Placido,Furtado,,9000000004,DeltaCo,Marketing Manager,Retail,Web

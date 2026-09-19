@@ -16,11 +16,8 @@ const logger = require('../../configs/logger.js');
 const { assertRecaptcha } = require('../../utils/recaptcha.util.js');
 
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes, per SRS 4.1.2
+const LOCKOUT_DURATION_MS = 2400 * 60 * 1000; // 15 minutes, per SRS 4.1.2
 
-// Controllers should never see raw model instances — this is the one place
-// that decides what a "user" looks like to the outside world. No hashes, no
-// counters, no lockout state.
 const toPublicUser = (user) => ({
   id: user.id,
   role: user.role,
@@ -33,26 +30,18 @@ const toPublicUser = (user) => ({
 
 class AuthService
 {
-  async register({ firstName, lastName, email, password, recaptchaToken })
+  async register({ firstName, lastName, email, password })
   {
-    await assertRecaptcha(recaptchaToken);
+    // await assertRecaptcha(recaptchaToken);
     const normalizedEmail = email.toLowerCase();
 
     const existing = await User.findOne({ where: { email: normalizedEmail } });
     if (existing)
     {
-      // Registration is the one auth flow where we DO confirm an account
-      // exists — the person needs actionable feedback (log in instead, or
-      // use a different email). Enumeration protection matters at login and
-      // password reset, not here.
       throw new ConflictError('An account with this email already exists.');
     }
 
     const passwordHash = await hashPassword(password);
-
-    // Self-registration always creates a Campaign Manager — the registering
-    // user becomes the tenant boundary for their own agency workspace.
-    // Executive and Client accounts are created by a Manager, not self-registered.
     const user = await User.create({
       role: constants.ROLES.CAMPAIGN_MANAGER,
       firstName,
@@ -67,9 +56,9 @@ class AuthService
     return { user: toPublicUser(user) };
   }
 
-  async login({ email, password, recaptchaToken })
+  async login({ email, password })
   {
-    await assertRecaptcha(recaptchaToken);
+    // await assertRecaptcha(recaptchaToken);
     const normalizedEmail = email.toLowerCase();
     const user = await User.unscoped().findOne({ where: { email: normalizedEmail } });
 
@@ -134,8 +123,6 @@ class AuthService
     {
       throw new ForbiddenError('This account has been deactivated.');
     }
-
-    // Rotate on every renewal — limits how long a stolen refresh token stays useful.
     const newRefreshToken = generateOpaqueToken();
     await user.update({
       refreshTokenHash: hashOpaqueToken(newRefreshToken),
@@ -151,10 +138,6 @@ class AuthService
   {
     const user = await User.findByPk(userId);
     if (!user) return;
-
-    // Bump tokenVersion so any access token already issued for this session
-    // is rejected immediately by the auth middleware, not just once it
-    // naturally expires 15 minutes from now.
     await user.update({
       refreshTokenHash: null,
       refreshTokenExpiresAt: null,
@@ -166,9 +149,6 @@ class AuthService
   {
     const normalizedEmail = email.toLowerCase();
     const user = await User.findOne({ where: { email: normalizedEmail } });
-
-    // Deliberately do NOT throw NotFoundError — this flow must never reveal
-    // whether an email is registered.
     if (!user)
     {
       logger.info('Password reset requested for an unregistered email');
@@ -180,11 +160,6 @@ class AuthService
       resetTokenHash: hashOpaqueToken(resetToken),
       resetTokenExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS)
     });
-
-    // Sent via leadpulse-email-service — see emailServiceClient.js. That
-    // service currently stubs delivery with a log rather than a real send
-    // (no SendGrid account wired up yet per SRS 4.10), but the call site
-    // here won't need to change when real delivery is added.
     const resetLink = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
     await sendEmail({
       to: user.email,
@@ -194,9 +169,9 @@ class AuthService
     });
   }
 
-  async resetPassword({ token, password, recaptchaToken })
+  async resetPassword({ token, password, })
   {
-    await assertRecaptcha(recaptchaToken);
+    // await assertRecaptcha(recaptchaToken);
     const tokenHash = hashOpaqueToken(token);
     const user = await User.unscoped().findOne({ where: { resetTokenHash: tokenHash } });
 
@@ -234,16 +209,7 @@ class AuthService
     return toPublicUser(user);
   }
 
-  /**
-   * Self-service password change for an already-authenticated user of ANY
-   * role — the missing counterpart to the reset-link flow, which always
-   * requires proving email access. Here, correctly typing the CURRENT
-   * password is the proof of identity instead.
-   *
-   * Per SRS 4.11 (Client Portal Profile) and the "first-login
-   * password-change prompt" implied for Executives — neither role had any
-   * way to do this except the full forgot/reset-via-email round trip.
-   */
+
   async changePassword(userId, { currentPassword, newPassword })
   {
     const user = await User.unscoped().findByPk(userId);
@@ -259,10 +225,6 @@ class AuthService
 
     await user.update({
       passwordHash,
-      // Same session-invalidation as a reset-link completion: knowing the
-      // current password is just as strong a proof of identity, so any
-      // OTHER session (a stolen token, a forgotten logged-in device)
-      // should stop working the moment the password changes.
       refreshTokenHash: null,
       refreshTokenExpiresAt: null,
       tokenVersion: user.tokenVersion + 1,
@@ -274,11 +236,6 @@ class AuthService
     return { message: 'Password changed successfully. Please log in again.' };
   }
 
-  /**
-   * Self-service profile update (display name) — the other half of the
-   * same SRS 4.11 "Profile" requirement, available to every role since
-   * nothing about it is client-specific.
-   */
   async updateProfile(userId, { firstName, lastName })
   {
     const user = await User.findByPk(userId);

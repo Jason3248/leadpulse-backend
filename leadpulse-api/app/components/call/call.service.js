@@ -57,7 +57,8 @@ class CallService
   /**
    * Daily aggregated metrics for the executive across all their assigned campaigns.
    */
-  async myMetrics(executiveUserId) {
+  async myMetrics(executiveUserId)
+  {
     // 1. Pending Leads (across all active campaigns assigned to them)
     const pendingLeads = await CampaignLead.count({
       include: [{
@@ -67,7 +68,7 @@ class CallService
       }],
       where: {
         assignedExecutiveId: executiveUserId,
-        queueExhausted: false
+        queueStatus: { [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS] }
       }
     });
 
@@ -112,7 +113,10 @@ class CallService
         {
           model: CampaignLead,
           as: 'campaignLead',
-          where: { assignedExecutiveId: executiveUserId, queueExhausted: false },
+          where: {
+            assignedExecutiveId: executiveUserId,
+            queueStatus: { [Op.in]: [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS] }
+          },
           include: [{
             model: Campaign,
             as: 'campaign',
@@ -122,14 +126,17 @@ class CallService
       ],
       order: [['createdAt', 'DESC']]
     });
-    
+
     let overdueCallbacksCount = 0;
     const seenLeads = new Set();
-    
-    for (const rm of remarks) {
-      if (!seenLeads.has(rm.campaignLeadId)) {
+
+    for (const rm of remarks)
+    {
+      if (!seenLeads.has(rm.campaignLeadId))
+      {
         seenLeads.add(rm.campaignLeadId);
-        if (rm.callOutcome === CALL_OUTCOME.CALLBACK_REQUESTED && rm.followUpDate && new Date(rm.followUpDate) <= now) {
+        if (rm.callOutcome === CALL_OUTCOME.CALLBACK_REQUESTED && rm.followUpDate && new Date(rm.followUpDate) <= now)
+        {
           overdueCallbacksCount++;
         }
       }
@@ -139,7 +146,7 @@ class CallService
       callsMadeToday,
       conversionsClaimedToday,
       totalPendingLeads: pendingLeads,
-      overdueCallbacksCount
+      overdueCallbacks: overdueCallbacksCount
     };
   }
 
@@ -304,7 +311,8 @@ class CallService
       limit: 20
     });
 
-    return Promise.all(history.map(async (cl) => {
+    return Promise.all(history.map(async (cl) =>
+    {
       const lead = await Lead.findByPk(cl.leadId);
       const previousRemarks = await CallRemark.findAll({
         where: { campaignLeadId: cl.id },
@@ -475,12 +483,13 @@ class CallService
     };
   }
 
-  async globalPendingConversions(managerId) {
+  async globalPendingConversions(managerId)
+  {
     // Get all campaigns owned by this manager
     const ownedClientIds = (await Client.findAll({ where: { managerId }, attributes: ['id'] })).map(c => c.id);
     if (ownedClientIds.length === 0) return [];
-    
-    const campaigns = await Campaign.findAll({ 
+
+    const campaigns = await Campaign.findAll({
       where: { clientId: { [Op.in]: ownedClientIds }, type: CAMPAIGN_TYPE.CALL },
       attributes: ['id', 'name']
     });
@@ -493,14 +502,14 @@ class CallService
         conversionConfirmed: null
       },
       include: [
-        { 
-          model: CampaignLead, 
-          as: 'campaignLead', 
+        {
+          model: CampaignLead,
+          as: 'campaignLead',
           where: { campaignId: { [Op.in]: campaignIds } },
           include: [
             { model: Lead, as: 'lead' },
             { model: Campaign, as: 'campaign', attributes: ['id', 'name'] }
-          ] 
+          ]
         },
         { model: User, as: 'executive', attributes: ['id', 'firstName', 'lastName'] }
       ],
@@ -520,11 +529,12 @@ class CallService
     }));
   }
 
-  async globalCallbacksDue(managerId) {
+  async globalCallbacksDue(managerId)
+  {
     const ownedClientIds = (await Client.findAll({ where: { managerId }, attributes: ['id'] })).map(c => c.id);
     if (ownedClientIds.length === 0) return [];
 
-    const campaigns = await Campaign.findAll({ 
+    const campaigns = await Campaign.findAll({
       where: { clientId: { [Op.in]: ownedClientIds }, type: CAMPAIGN_TYPE.CALL },
       attributes: ['id', 'name']
     });
@@ -543,7 +553,8 @@ class CallService
     const now = new Date();
     const due = [];
 
-    for (const cl of campaignLeads) {
+    for (const cl of campaignLeads)
+    {
       const latest = await CallRemark.findOne({
         where: { campaignLeadId: cl.id },
         order: [['createdAt', 'DESC']]
@@ -733,7 +744,7 @@ class CallService
     if (ids.length === 0) return [];
 
     const campaigns = await Campaign.findAll({
-      where: { id: { [Op.in]: ids }, type: CAMPAIGN_TYPE.CALL },
+      where: { id: { [Op.in]: ids } },
       include: [{ model: Client, as: 'client', attributes: ['id', 'name'] }],
       order: [['createdAt', 'DESC']]
     });
@@ -742,6 +753,7 @@ class CallService
       campaigns.map(async (c) => ({
         id: c.id,
         name: c.name,
+        type: c.type,
         clientName: c.client.name,
         status: c.status,
         myPendingLeads: await CampaignLead.count({
@@ -912,6 +924,139 @@ class CallService
     });
 
     return toCallCard(campaignLead, lead, previousRemarks);
+  }
+
+
+  async executivePerformance(executiveId, managerId)
+  {
+    // 1. Ownership check
+    const executive = await User.findOne({
+      where: { id: executiveId, managerId, role: ROLES.EXECUTIVE }
+    });
+    if (!executive) throw new NotFoundError('Executive not found.');
+
+    // 2. All assignments (active + historic)
+    const allAssignments = await CampaignExecutive.findAll({
+      where: { executiveUserId: executiveId },
+      attributes: ['campaignId', 'isActive']
+    });
+    const allCampaignIds = allAssignments.map(a => a.campaignId);
+    const activeCampaignIds = allAssignments.filter(a => a.isActive).map(a => a.campaignId);
+
+    const campaigns = allCampaignIds.length
+      ? await Campaign.findAll({
+        where: { id: { [Op.in]: allCampaignIds }, type: CAMPAIGN_TYPE.CALL },
+        include: [{ model: Client, as: 'client', attributes: ['id', 'name'] }],
+        order: [['createdAt', 'DESC']]
+      })
+      : [];
+
+    const campaignLeads = allCampaignIds.length
+      ? await CampaignLead.findAll({
+        where: { campaignId: { [Op.in]: allCampaignIds }, assignedExecutiveId: executiveId },
+        attributes: ['id', 'campaignId', 'queueStatus']
+      })
+      : [];
+    const clIds = campaignLeads.map(cl => cl.id);
+
+    const allRemarks = clIds.length
+      ? await CallRemark.findAll({
+        where: { executiveUserId: executiveId, campaignLeadId: { [Op.in]: clIds } },
+        attributes: ['id', 'callOutcome', 'callDurationMinutes', 'conversionConfirmed', 'campaignLeadId', 'createdAt'],
+        order: [['createdAt', 'DESC']]
+      })
+      : [];
+
+    // Lifetime aggregates
+    const totalCallsLogged = allRemarks.length;
+    const durSamples = allRemarks.filter(r => r.callDurationMinutes != null);
+    const totalDurationMinutes = durSamples.reduce((sum, r) => sum + r.callDurationMinutes, 0);
+    const avgCallDurationMinutes = durSamples.length
+      ? Math.round((totalDurationMinutes / durSamples.length) * 10) / 10
+      : null;
+
+    const totalConversionsClaimed = allRemarks.filter(r => r.callOutcome === CALL_OUTCOME.CONVERTED).length;
+    const totalConversionsConfirmed = allRemarks.filter(r => r.callOutcome === CALL_OUTCOME.CONVERTED && r.conversionConfirmed === true).length;
+    const totalConversionsRejected = allRemarks.filter(r => r.callOutcome === CALL_OUTCOME.CONVERTED && r.conversionConfirmed === false).length;
+    const conversionClaimRate = totalCallsLogged > 0
+      ? Math.round((totalConversionsClaimed / totalCallsLogged) * 1000) / 10 : 0;
+    const conversionConfirmRate = totalConversionsClaimed > 0
+      ? Math.round((totalConversionsConfirmed / totalConversionsClaimed) * 1000) / 10 : 0;
+
+    const outcomeBreakdown = {};
+    for (const r of allRemarks)
+    {
+      outcomeBreakdown[r.callOutcome] = (outcomeBreakdown[r.callOutcome] || 0) + 1;
+    }
+
+    const totalLeadsAssigned = campaignLeads.length;
+    const leadsCompleted = campaignLeads.filter(cl => cl.queueStatus === QUEUE_STATUS.COMPLETED).length;
+    const leadsSkipped = campaignLeads.filter(cl => cl.queueStatus === QUEUE_STATUS.SKIPPED).length;
+    const leadsPending = campaignLeads.filter(cl =>
+      [QUEUE_STATUS.PENDING, QUEUE_STATUS.IN_PROGRESS, QUEUE_STATUS.CALLED].includes(cl.queueStatus)
+    ).length;
+    const leadCompletionRate = totalLeadsAssigned > 0
+      ? Math.round((leadsCompleted / totalLeadsAssigned) * 1000) / 10 : 0;
+
+    // 30-day activity trend
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const dailyActivity = {};
+    for (const r of allRemarks.filter(r => new Date(r.createdAt) >= thirtyDaysAgo))
+    {
+      const day = new Date(r.createdAt).toISOString().split('T')[0];
+      dailyActivity[day] = (dailyActivity[day] || 0) + 1;
+    }
+    const activityTrend = Object.entries(dailyActivity)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Per-campaign breakdown
+    const campaignBreakdown = campaigns.map(camp =>
+    {
+      const campLeads = campaignLeads.filter(cl => cl.campaignId === camp.id);
+      const campLeadIds = new Set(campLeads.map(cl => cl.id));
+      const campRemarks = allRemarks.filter(r => campLeadIds.has(r.campaignLeadId));
+      const campDurSamples = campRemarks.filter(r => r.callDurationMinutes != null);
+      return {
+        campaignId: camp.id,
+        campaignName: camp.name,
+        clientName: camp.client?.name || null,
+        status: camp.status,
+        isCurrentlyAssigned: activeCampaignIds.includes(camp.id),
+        leadsAssigned: campLeads.length,
+        leadsCompleted: campLeads.filter(cl => cl.queueStatus === QUEUE_STATUS.COMPLETED).length,
+        callsLogged: campRemarks.length,
+        conversionsClaimed: campRemarks.filter(r => r.callOutcome === CALL_OUTCOME.CONVERTED).length,
+        conversionsConfirmed: campRemarks.filter(r => r.callOutcome === CALL_OUTCOME.CONVERTED && r.conversionConfirmed === true).length,
+        avgCallDurationMinutes: campDurSamples.length
+          ? Math.round((campDurSamples.reduce((s, r) => s + r.callDurationMinutes, 0) / campDurSamples.length) * 10) / 10
+          : null
+      };
+    });
+
+    return {
+      executive: {
+        id: executive.id,
+        firstName: executive.firstName,
+        lastName: executive.lastName,
+        email: executive.email,
+        isActive: executive.isActive,
+        joinedAt: executive.createdAt,
+        lastLoginAt: executive.lastLoginAt
+      },
+      overview: {
+        totalCallsLogged, avgCallDurationMinutes,
+        totalDurationMinutes: Math.round(totalDurationMinutes),
+        totalLeadsAssigned, leadsCompleted, leadsSkipped, leadsPending,
+        leadCompletionRate, totalConversionsClaimed, totalConversionsConfirmed,
+        totalConversionsRejected, conversionClaimRate, conversionConfirmRate,
+        campaignsWorked: campaigns.length, activeCampaigns: activeCampaignIds.length
+      },
+      outcomeBreakdown,
+      activityTrend,
+      campaignBreakdown
+    };
   }
 }
 

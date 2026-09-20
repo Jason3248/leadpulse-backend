@@ -1,6 +1,6 @@
 'use strict';
 
-const { Lead, ClientLead, LeadList, LeadListMembership, Sequelize } = require('leadpulse-data-model');
+const { Lead, ClientLead, LeadList, LeadListMembership, CampaignLead, Sequelize } = require('leadpulse-data-model');
 const { NotFoundError, ValidationError } = require('../../lib');
 const { updateLeadStatus } = require('./leadStatus.service.js');
 const assertClientOwnership = require('../client/assertClientOwnership.js');
@@ -41,7 +41,7 @@ const toPublicLead = (lead, clientLead, memberships) => ({
 });
 
 class LeadService {
-  async list({ clientId, managerId, leadListId, industry, jobTitle, source, status, page = 1, pageSize = 25 }) {
+  async list({ clientId, managerId, leadListId, industry, jobTitle, source, status, onlyFromCampaignId, page = 1, pageSize = 25 }) {
     if (!clientId) throw new ValidationError('clientId query parameter is required.');
     const safePage = Math.max(1, parseInt(page, 10) || 1);
     const safePageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 25));
@@ -58,6 +58,19 @@ class LeadService {
 
     if (scopedLeadIds.length === 0) {
       return { leads: [], pagination: { page: safePage, pageSize: safePageSize, total: 0, totalPages: 0 } };
+    }
+
+    if (onlyFromCampaignId) {
+      const priorLeads = await CampaignLead.findAll({
+        where: { campaignId: onlyFromCampaignId },
+        attributes: ['leadId']
+      });
+      const priorLeadIds = new Set(priorLeads.map(pl => pl.leadId));
+      scopedLeadIds = scopedLeadIds.filter(id => priorLeadIds.has(id));
+      
+      if (scopedLeadIds.length === 0) {
+        return { leads: [], pagination: { page: safePage, pageSize: safePageSize, total: 0, totalPages: 0 } };
+      }
     }
 
     if (leadListId || status) {

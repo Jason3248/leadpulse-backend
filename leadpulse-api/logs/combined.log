@@ -549,3 +549,118 @@
 {"campaignId":"9547575c-d997-43ae-bdd7-d27e9a3dbda5","leadId":"6c2fb9e1-28ae-4067-87d2-568714d1d450","level":"info","message":"Suppressed email recipient","reason":"unsubscribed","timestamp":"2026-09-19T12:48:27.747Z"}
 {"campaignId":"9547575c-d997-43ae-bdd7-d27e9a3dbda5","leadId":"f8868a98-ff13-48c6-b929-a7c51a5ab2cc","level":"info","message":"Suppressed email recipient","reason":"hard_bounced","timestamp":"2026-09-19T12:48:28.261Z"}
 {"failed":0,"jobId":"40639130-040a-4ddb-b3cf-4ebfed5bb7a2","level":"info","message":"Email dispatch finished","sent":2,"suppressed":2,"timestamp":"2026-09-19T12:48:28.294Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T13:19:38.399Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T13:19:38.419Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/users/client-users","timestamp":"2026-09-19T13:24:39.916Z"}
+{"clientId":"d67afee9-af24-45b8-bd61-c9930d2844e2","level":"info","message":"Client portal user created","timestamp":"2026-09-19T13:24:50.467Z","userId":"79ddb821-77e6-404f-bbbc-448f51eaa2c0"}
+{"level":"info","managerId":"8c2f3cd0-c8f3-4ff5-b3c4-b3e484ac86ac","message":"Manager-triggered password reset","timestamp":"2026-09-19T13:25:48.898Z","userId":"79ddb821-77e6-404f-bbbc-448f51eaa2c0"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-19T13:42:52.967Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-19T13:42:52.975Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-19T13:42:53.019Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-19T13:42:53.029Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-19T13:58:07.077Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/sequences","timestamp":"2026-09-19T13:58:07.090Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-19T13:58:07.121Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/sequences","timestamp":"2026-09-19T13:58:07.126Z"}
+{"bannerImageUrl":null,"emailBodyHtml":"<p>Hi {{first_name}},</p>\n\n<p>I noticed {{company}} has been scaling its operations recently. We help teams like yours streamline their workflows and increase efficiency by up to 30%.</p>\n\n<p>You can <a href=\"https://example.com/demo-video\">watch our 2-minute demo video here</a> to see exactly how our platform works.</p>\n\n<p>If you're ready to chat about how we can support your growth, just click below:</p>\n\n<p>{{conversion_link}}</p>\n\n<p>Best,<br>\nThe Acme Team</p>","excludeClosedLeads":true,"level":"info","message":"updates: ","segmentationFilters":null,"senderName":"Acme Agency Partners","subjectLine":"Quick question regarding {{company}}","timestamp":"2026-09-19T14:07:17.790Z"}
+{"campaignId":"26baf711-8b7d-4f1e-897d-327015fceb73","leadId":"6c2fb9e1-28ae-4067-87d2-568714d1d450","level":"info","message":"Suppressed email recipient","reason":"unsubscribed","timestamp":"2026-09-19T14:09:01.423Z"}
+{"failed":0,"jobId":"2e1c35bc-c453-4f90-9fe0-6d112854d5a5","level":"info","message":"Email dispatch finished","sent":2,"suppressed":1,"timestamp":"2026-09-19T14:09:01.882Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/reports/agency-dashboard","timestamp":"2026-09-19T14:13:20.331Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/reports/agency-dashboard","timestamp":"2026-09-19T14:13:20.338Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/auth/logout","timestamp":"2026-09-19T14:33:02.421Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Refresh token missing.","path":"/api/v1/auth/refresh","timestamp":"2026-09-19T14:43:34.075Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:17:38.833Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:17:38.866Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:18:18.464Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:18:18.489Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid email or password.","path":"/api/v1/auth/login","timestamp":"2026-09-19T15:24:26.189Z"}
+{"level":"error","message":"Unhandled error column CampaignLead.queueExhausted does not exist","path":"/api/v1/call/my-metrics","stack":"Error\n    at Query.run (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.rawSelect (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:434:18)\n    at async CampaignLead.aggregate (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1277:19)\n    at async CampaignLead.count (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1306:20)\n    at async CallService.myMetrics (D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.service.js:62:26)\n    at async D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.controller.js:18:21","timestamp":"2026-09-19T15:25:47.280Z"}
+{"level":"error","message":"Unhandled error column CampaignLead.queueExhausted does not exist","path":"/api/v1/call/my-metrics","stack":"Error\n    at Query.run (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.rawSelect (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:434:18)\n    at async CampaignLead.aggregate (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1277:19)\n    at async CampaignLead.count (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1306:20)\n    at async CallService.myMetrics (D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.service.js:62:26)\n    at async D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.controller.js:18:21","timestamp":"2026-09-19T15:25:47.349Z"}
+{"level":"error","message":"Unhandled error column CampaignLead.queueExhausted does not exist","path":"/api/v1/call/my-metrics","stack":"Error\n    at Query.run (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.rawSelect (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:434:18)\n    at async CampaignLead.aggregate (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1277:19)\n    at async CampaignLead.count (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1306:20)\n    at async CallService.myMetrics (D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.service.js:62:26)\n    at async D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.controller.js:18:21","timestamp":"2026-09-19T15:26:03.713Z"}
+{"level":"error","message":"Unhandled error column CampaignLead.queueExhausted does not exist","path":"/api/v1/call/my-metrics","stack":"Error\n    at Query.run (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\postgres\\query.js:50:25)\n    at D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async PostgresQueryInterface.rawSelect (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:434:18)\n    at async CampaignLead.aggregate (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1277:19)\n    at async CampaignLead.count (D:\\leadpulse\\leadpulse-workspace\\node_modules\\sequelize\\lib\\model.js:1306:20)\n    at async CallService.myMetrics (D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.service.js:62:26)\n    at async D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\call\\call.controller.js:18:21","timestamp":"2026-09-19T15:26:03.752Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:29:32.690Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:29:32.717Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:32:23.103Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:32:23.126Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:32:44.258Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:32:44.281Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:35:09.203Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:35:09.227Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T15:36:27.077Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T15:36:27.113Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T18:14:15.453Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T18:14:15.470Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-campaigns","timestamp":"2026-09-19T18:43:39.548Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-metrics","timestamp":"2026-09-19T18:43:39.562Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-campaigns","timestamp":"2026-09-19T18:43:39.572Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-metrics","timestamp":"2026-09-19T18:43:39.597Z"}
+{"excludeClosedLeads":false,"level":"info","message":"updates: ","segmentationFilters":null,"timestamp":"2026-09-19T19:01:28.519Z"}
+{"level":"error","message":"Unhandled error Lead is not defined","path":"/api/v1/campaigns/c6c09019-5942-416c-b084-e1dbeab35925/stranded-leads","stack":"ReferenceError: Lead is not defined\n    at CampaignService.getStrandedLeads (D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\campaign\\campaign.service.js:335:26)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async D:\\leadpulse\\leadpulse-workspace\\leadpulse-api\\app\\components\\campaign\\campaign.controller.js:49:19","timestamp":"2026-09-19T19:01:43.050Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-19T19:07:34.252Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-19T19:07:34.275Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/call/leads/2444adec-a86e-466e-813a-3b310b4517eb/remarks","timestamp":"2026-09-19T19:12:15.812Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/leads/f9e33720-ee8b-4276-b584-27528aa24b17","timestamp":"2026-09-19T19:25:07.127Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/leads/f9e33720-ee8b-4276-b584-27528aa24b17","timestamp":"2026-09-19T19:25:07.175Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/call/remarks/9ed6f457-5d9e-4b60-91e9-789ecfd281f6/review","timestamp":"2026-09-19T19:32:16.639Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/auth/logout","timestamp":"2026-09-19T20:25:50.428Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Refresh token missing.","path":"/api/v1/auth/refresh","timestamp":"2026-09-19T20:25:52.783Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T07:00:52.801Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T07:00:52.815Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-campaigns","timestamp":"2026-09-20T07:35:59.601Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/campaigns/c6c09019-5942-416c-b084-e1dbeab35925/callbacks-due","timestamp":"2026-09-20T07:35:59.623Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/campaigns/c6c09019-5942-416c-b084-e1dbeab35925/history","timestamp":"2026-09-20T07:35:59.629Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/my-campaigns","timestamp":"2026-09-20T07:35:59.663Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/campaigns/c6c09019-5942-416c-b084-e1dbeab35925/callbacks-due","timestamp":"2026-09-20T07:35:59.667Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/campaigns/c6c09019-5942-416c-b084-e1dbeab35925/history","timestamp":"2026-09-20T07:35:59.673Z"}
+{"campaignId":"c6c09019-5942-416c-b084-e1dbeab35925","level":"info","message":"Call campaign completed by exhaustion","timestamp":"2026-09-20T07:36:28.404Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T09:11:50.211Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T09:11:50.218Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid email or password.","path":"/api/v1/auth/login","timestamp":"2026-09-20T09:17:22.381Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/call/remarks/9ed6f457-5d9e-4b60-91e9-789ecfd281f6/review","timestamp":"2026-09-20T09:23:36.179Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/conversions/pending","timestamp":"2026-09-20T09:42:11.177Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/callbacks/due","timestamp":"2026-09-20T09:42:11.205Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/conversions/pending","timestamp":"2026-09-20T09:42:11.208Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/call/callbacks/due","timestamp":"2026-09-20T09:42:11.213Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T09:44:59.782Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T09:44:59.790Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/users/executives/9d0bfc6c-039a-4045-98f1-6487267673f5/performance","timestamp":"2026-09-20T10:04:35.923Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T10:08:36.230Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T10:08:36.248Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Session expired. Please log in again.","path":"/api/v1/auth/refresh","timestamp":"2026-09-20T10:09:25.639Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Session expired. Please log in again.","path":"/api/v1/auth/refresh","timestamp":"2026-09-20T10:09:31.308Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T10:13:58.631Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T10:13:58.647Z"}
+{"level":"info","message":"New Campaign Manager registered","timestamp":"2026-09-20T10:14:29.750Z","userId":"00652006-5cbc-405f-98ea-5e9fa39fe1ea"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET /login not found","path":"/login","timestamp":"2026-09-20T10:15:05.883Z"}
+{"code":"NOT_FOUND","level":"warn","message":"Route GET /favicon.ico not found","path":"/favicon.ico","timestamp":"2026-09-20T10:15:06.423Z"}
+{"clientId":"92eebc38-50cf-4842-ad28-7ec80fa6ca82","level":"info","message":"Client portal user created","timestamp":"2026-09-20T10:19:24.878Z","userId":"171d1e78-48d1-4778-b489-c6824d161fe8"}
+{"executiveId":"d754a2fd-7f04-4730-b1a8-16ccfff728da","level":"info","managerId":"00652006-5cbc-405f-98ea-5e9fa39fe1ea","message":"Executive created","timestamp":"2026-09-20T10:19:58.850Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-20T10:31:03.080Z"}
+{"bannerImageUrl":null,"emailBodyHtml":"<p>Hi {{first_name}},</p>\n<p>I noticed {{company}} has been scaling its operations recently. We help teams like yours streamline their workflows and increase efficiency by up to 30%.</p>\n<p>If you're open to a brief chat about how we can support your growth, just let me know.</p>\n<p>{{conversion_link}}</p>\n<p>Best,<br>\nThe Acme Team</p>","excludeClosedLeads":true,"level":"info","message":"updates: ","segmentationFilters":null,"senderName":"Acme Agency Partners12:12 PM","subjectLine":"Quick question regarding {{company}}","timestamp":"2026-09-20T10:33:03.787Z"}
+{"failed":0,"jobId":"84a840db-bc6e-4789-a178-97c36dcdebf8","level":"info","message":"Email dispatch finished","sent":3,"suppressed":0,"timestamp":"2026-09-20T10:33:25.884Z"}
+{"excludeClosedLeads":false,"level":"info","message":"updates: ","segmentationFilters":{"membershipStatus":"Contacted"},"timestamp":"2026-09-20T10:38:20.254Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/campaigns/da1ceb30-5b65-4f97-aa3f-887cdec1fc4f","timestamp":"2026-09-20T10:39:25.206Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/campaigns/da1ceb30-5b65-4f97-aa3f-887cdec1fc4f","timestamp":"2026-09-20T10:39:33.391Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-20T10:56:09.133Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/campaigns","timestamp":"2026-09-20T10:56:09.159Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-20T10:56:09.171Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid or expired token","path":"/api/v1/clients","timestamp":"2026-09-20T10:56:09.193Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:05:17.820Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:05:17.830Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:05:27.769Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:05:27.778Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:13:40.033Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:13:40.045Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/campaigns/da1ceb30-5b65-4f97-aa3f-887cdec1fc4f","timestamp":"2026-09-20T11:15:39.740Z"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"One or more fields are invalid.","path":"/api/v1/campaigns/da1ceb30-5b65-4f97-aa3f-887cdec1fc4f","timestamp":"2026-09-20T11:15:45.578Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:23:00.428Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:23:00.444Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:23:45.764Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:23:45.773Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:23:54.128Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:23:54.138Z"}
+{"level":"info","message":"Database connection established successfully.","timestamp":"2026-09-20T11:24:40.754Z"}
+{"level":"info","message":"LeadPulse API listening on port 4000","timestamp":"2026-09-20T11:24:40.768Z"}
+{"excludeClosedLeads":false,"level":"info","message":"updates: ","segmentationFilters":null,"timestamp":"2026-09-20T11:26:06.263Z"}
+{"code":"BUSINESS_RULE_ERROR","level":"warn","message":"A call campaign needs at least one assigned executive before approval.","path":"/api/v1/campaigns/da1ceb30-5b65-4f97-aa3f-887cdec1fc4f/approve","timestamp":"2026-09-20T11:26:18.395Z"}
+{"code":"UNAUTHORIZED","level":"warn","message":"Invalid email or password.","path":"/api/v1/auth/login","timestamp":"2026-09-20T11:27:45.208Z"}

@@ -215,12 +215,16 @@ async function sequenceRollup(sequenceId) {
       leadListId: sequence.leadListId,
       createdAt: sequence.createdAt
     },
-    steps: campaigns.map((c) => ({
+    steps: campaigns.map((c, idx) => ({
       id: c.id,
       name: c.name,
       type: c.type,
       status: c.status,
-      stepOrder: c.sequenceStepOrder
+      // Use the explicitly set step order if present; otherwise fall back to
+      // 1-indexed position in the createdAt-sorted array. This ensures the UI
+      // always shows a real number (not "?") even for campaigns that were
+      // created before explicit step ordering was introduced.
+      stepOrder: c.sequenceStepOrder != null ? c.sequenceStepOrder : idx + 1
     })),
     totals: {
       steps: campaigns.length,

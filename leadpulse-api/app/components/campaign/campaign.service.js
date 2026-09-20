@@ -5,6 +5,7 @@ const {
   CampaignExecutive,
   CampaignLead,
   Client,
+  Lead,
   LeadList,
   User,
   Sequence,
@@ -216,7 +217,7 @@ class CampaignService
     }
   }
 
-  async list({ managerId, clientId, status, type })
+  async list({ managerId, clientId, status, type, sequenceId })
   {
     // Scope to campaigns whose client this manager owns.
     const clientWhere = { managerId };
@@ -227,8 +228,13 @@ class CampaignService
     const where = { clientId: { [Op.in]: ownedClientIds } };
     if (status) where.status = status;
     if (type) where.type = type;
+    // Allows fetching all sibling campaigns in a cadence (for "prior campaign" targeting dropdown)
+    if (sequenceId) where.sequenceId = sequenceId;
 
-    const campaigns = await Campaign.findAll({ where, order: [['createdAt', 'DESC']] });
+    const campaigns = await Campaign.findAll({
+      where,
+      order: [['sequenceStepOrder', 'ASC'], ['createdAt', 'ASC']]
+    });
     return campaigns.map(toPublicCampaign);
   }
 

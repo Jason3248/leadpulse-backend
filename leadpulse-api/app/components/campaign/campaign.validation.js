@@ -10,7 +10,8 @@ const segmentationFilters = z
     industry: z.string().trim().min(1).optional(),
     jobTitle: z.string().trim().min(1).optional(),
     source: z.string().trim().min(1).optional(),
-    membershipStatus: z.enum(['New', 'Contacted', 'Qualified', 'Converted', 'Dead']).optional()
+    membershipStatus: z.enum(['New', 'Contacted', 'Qualified', 'Converted', 'Dead']).optional(),
+    onlyFromCampaignId: z.string().uuid().optional()
   })
   .strict()
   .optional();

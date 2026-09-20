@@ -547,6 +547,16 @@
     ]
   },
   {
+    "method": "GET",
+    "path": "/api/v1/users/executives/:executiveId/performance",
+    "controller": "call",
+    "action": "executivePerformance",
+    "middlewares": [
+      "authenticate",
+      "requireManager"
+    ]
+  },
+  {
     "method": "POST",
     "path": "/api/v1/email/campaigns/:campaignId/dispatch",
     "controller": "email",

@@ -90,6 +90,13 @@ class CallController
     const progress = await callService.progress(req.params.campaignId, req.user.id);
     res.status(200).json({ success: true, data: progress });
   });
+
+
+  executivePerformance = asyncHandler(async (req, res) =>
+  {
+    const data = await callService.executivePerformance(req.params.executiveId, req.user.id);
+    res.status(200).json({ success: true, data });
+  });
 }
 
 module.exports = CallController;
